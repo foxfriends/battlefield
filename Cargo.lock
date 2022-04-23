@@ -324,6 +324,7 @@ dependencies = [
  "lazy_static",
  "log",
  "pretty_env_logger",
+ "serde_json",
 ]
 
 [[package]]
