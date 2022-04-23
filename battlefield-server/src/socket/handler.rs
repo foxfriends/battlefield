@@ -1,7 +1,7 @@
 use actix::{Actor, StreamHandler};
 use actix_web_actors::ws;
-
 use battlefield_core::{process, State};
+use serde_json::json;
 
 pub(super) struct Handler;
 
@@ -16,10 +16,23 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Handler {
             Ok(ws::Message::Text(text)) => {
                 let message = text.parse().unwrap();
                 let mut state = State::default();
-                process(message, &mut state);
-                ctx.text(serde_json::to_string(&state).unwrap());
+                match process(message, &mut state) {
+                    Ok(response) => ctx.text(
+                        serde_json::to_string(&json! {{
+                            "ok": response
+                        }})
+                        .unwrap(),
+                    ),
+                    Err(error) => {
+                        ctx.text(
+                            serde_json::to_string(&json! {{
+                                "error": error.to_string(),
+                            }})
+                            .unwrap(),
+                        );
+                    }
+                }
             }
-            Ok(ws::Message::Binary(bin)) => ctx.binary(bin),
             _ => {}
         }
     }
