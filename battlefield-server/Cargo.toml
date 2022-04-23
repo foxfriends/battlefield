@@ -1,0 +1,16 @@
+[package]
+name = "battlefield-server"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "src/lib.rs"
+name = "battlefield_server"
+
+[dependencies]
+actix-web = "4.0.1"
+anyhow = "1.0.57"
+dotenv = "0.15.0"
+lazy_static = "1.4.0"
+log = "0.4.16"
+pretty_env_logger = "0.4.0"
