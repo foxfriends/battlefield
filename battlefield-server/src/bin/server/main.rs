@@ -1,4 +1,4 @@
-use actix_web::{App, HttpServer, middleware};
+use actix_web::{middleware, App, HttpServer};
 use battlefield_server::configure;
 
 mod env;
