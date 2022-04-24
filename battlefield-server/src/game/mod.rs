@@ -1,8 +1,15 @@
 use crate::db::PgPool;
 use actix::prelude::*;
-use battlefield_core::{process, Scenario, State};
-use serde_json::Value;
+use battlefield_core::{Scenario, State};
 use uuid::Uuid;
+
+mod command;
+mod get_scenario;
+mod get_state;
+
+pub use command::Command;
+pub use get_scenario::GetScenario;
+pub use get_state::GetState;
 
 pub struct Game {
     id: Uuid,
@@ -50,10 +57,6 @@ impl Game {
     }
 }
 
-#[derive(Message)]
-#[rtype(result = "anyhow::Result<Value>")]
-pub struct Command(pub battlefield_core::Command);
-
 impl Actor for Game {
     type Context = Context<Self>;
 
@@ -83,25 +86,5 @@ impl Actor for Game {
             }
         };
         future.into_actor(self).spawn(ctx);
-    }
-}
-
-impl Handler<Command> for Game {
-    type Result = MessageResult<Command>;
-
-    fn handle(&mut self, Command(command): Command, _ctx: &mut Self::Context) -> Self::Result {
-        MessageResult(process(command, &self.scenario, &mut self.state))
-    }
-}
-
-#[derive(Message)]
-#[rtype(result = "State")]
-pub struct GetState;
-
-impl Handler<GetState> for Game {
-    type Result = MessageResult<GetState>;
-
-    fn handle(&mut self, GetState: GetState, _ctx: &mut Self::Context) -> Self::Result {
-        MessageResult(self.state.clone())
     }
 }

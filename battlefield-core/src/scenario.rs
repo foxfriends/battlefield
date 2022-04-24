@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 type TileId = String;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Tile {
     name: String,
     description: String,
@@ -12,13 +12,13 @@ pub struct Tile {
     properties: HashMap<String, Value>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Map {
     tile_types: HashMap<TileId, Tile>,
     tiles: Vec<Vec<TileId>>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Scenario {
     name: String,
     description: String,
