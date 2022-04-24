@@ -1,6 +1,6 @@
 {
   "db": "PostgreSQL",
-  "00ea3a100977740a34b0de75fa4d4a93930e82be262990ba0bec31d55ac2a7db": {
+  "2f566f99ff7858d4cd2c23b649c60653e3f88f601e1d2dab201540b7d5086283": {
     "describe": {
       "columns": [
         {
@@ -12,9 +12,15 @@
           "name": "state",
           "ordinal": 1,
           "type_info": "Jsonb"
+        },
+        {
+          "name": "scenario",
+          "ordinal": 2,
+          "type_info": "Jsonb"
         }
       ],
       "nullable": [
+        false,
         false,
         false
       ],
@@ -22,27 +28,7 @@
         "Left": []
       }
     },
-    "query": "INSERT INTO games (id) values (default) RETURNING id, state"
-  },
-  "af4a194d58ea5ad5981ace1efca35e4aec54de49325e20eab1c6e482e464ef92": {
-    "describe": {
-      "columns": [
-        {
-          "name": "state",
-          "ordinal": 0,
-          "type_info": "Jsonb"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "SELECT state FROM games WHERE id = $1"
+    "query": "INSERT INTO games (id) values (default) RETURNING id, state, scenario"
   },
   "b91c22b6ac289754ff5840413b0d475d6b1fce97914abe300875f9b8e9d7b46c": {
     "describe": {
@@ -56,5 +42,31 @@
       }
     },
     "query": "UPDATE games SET state = $1 WHERE id = $2"
+  },
+  "edfeeec0b555f3f34303ae5c8781bd12961507db587ea56b620cb6f38d03145e": {
+    "describe": {
+      "columns": [
+        {
+          "name": "state",
+          "ordinal": 0,
+          "type_info": "Jsonb"
+        },
+        {
+          "name": "scenario",
+          "ordinal": 1,
+          "type_info": "Jsonb"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "SELECT state, scenario FROM games WHERE id = $1"
   }
 }
