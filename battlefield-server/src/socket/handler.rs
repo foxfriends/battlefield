@@ -1,4 +1,4 @@
-use crate::game::{Game, Command};
+use crate::game::{Command, Game};
 use actix::prelude::*;
 use actix_web_actors::ws;
 use serde::Serialize;
@@ -46,31 +46,31 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for SocketHandler {
         match msg {
             Ok(ws::Message::Ping(msg)) => ctx.pong(&msg),
             Ok(ws::Message::Text(text)) => {
-                match text.parse() {
-                    Ok(command) => {
-                        let game = self.game.clone();
-                        let socket = ctx.address();
-                        let future = async move {
-                            let value = game
-                                .send(Command(command))
-                                .await
-                                .map_err(anyhow::Error::from)
-                                .and_then(|result| result);
-                            let value = match value {
-                                Ok(value) => value,
-                                Err(error) => {
-                                    socket.send(Response::error(error)).await.ok();
-                                    return;
-                                }
-                            };
-                            socket.send(Response::Ok(value)).await.ok();
-                        };
-                        future.into_actor(self).spawn(ctx);
-                    }
+                let command = match text.parse() {
+                    Ok(command) => command,
                     Err(error) => {
                         ctx.notify(Response::error(error));
+                        return;
                     }
                 };
+                let game = self.game.clone();
+                let socket = ctx.address();
+                let future = async move {
+                    let value = game
+                        .send(Command(command))
+                        .await
+                        .map_err(anyhow::Error::from)
+                        .and_then(|result| result);
+                    let value = match value {
+                        Ok(value) => value,
+                        Err(error) => {
+                            socket.send(Response::error(error)).await.ok();
+                            return;
+                        }
+                    };
+                    socket.send(Response::Ok(value)).await.ok();
+                };
+                future.into_actor(self).spawn(ctx);
             }
             _ => {}
         }

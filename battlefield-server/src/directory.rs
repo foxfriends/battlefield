@@ -38,17 +38,15 @@ impl Handler<Lookup> for Directory {
         Box::pin(async move {
             let mut games = directory.games.lock().await;
             match games.entry(id) {
-                Entry::Occupied(mut entry) => {
-                    match entry.get().upgrade() {
-                        Some(addr) => Ok(addr),
-                        None => {
-                            let game = Game::load(id, directory.db.clone()).await?;
-                            let addr = game.start();
-                            entry.insert(addr.downgrade());
-                            Ok(addr)
-                        }
+                Entry::Occupied(mut entry) => match entry.get().upgrade() {
+                    Some(addr) => Ok(addr),
+                    None => {
+                        let game = Game::load(id, directory.db.clone()).await?;
+                        let addr = game.start();
+                        entry.insert(addr.downgrade());
+                        Ok(addr)
                     }
-                }
+                },
                 Entry::Vacant(entry) => {
                     let game = Game::load(id, directory.db.clone()).await?;
                     let addr = game.start();
