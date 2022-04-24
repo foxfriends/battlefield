@@ -56,19 +56,14 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for SocketHandler {
                 let game = self.game.clone();
                 let socket = ctx.address();
                 let future = async move {
-                    let value = game
+                    let response = game
                         .send(Command(command))
                         .await
                         .map_err(anyhow::Error::from)
-                        .and_then(|result| result);
-                    let value = match value {
-                        Ok(value) => value,
-                        Err(error) => {
-                            socket.send(Response::error(error)).await.ok();
-                            return;
-                        }
-                    };
-                    socket.send(Response::Ok(value)).await.ok();
+                        .and_then(|result| result)
+                        .map(Response::Ok)
+                        .unwrap_or_else(Response::error);
+                    socket.do_send(response);
                 };
                 future.into_actor(self).spawn(ctx);
             }
