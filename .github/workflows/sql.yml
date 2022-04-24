@@ -1,0 +1,51 @@
+name: Database CI
+on: push
+jobs:
+  migrate:
+    name: migrate
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: battlefield
+          POSTGRES_USER: battlefield
+          POSTGRES_DB: battlefield
+          DB_PORT: 5432
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout the source code
+        uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+            ./target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+      - name: Install SQLx
+        run: cargo install sqlx-cli
+      - name: Create database
+        run: sqlx database create
+        working-directory: battlefield-server
+        env:
+          DATABASE_URL: postgresql://battlefield:battlefield@localhost:5432/battlefield
+      - name: Migrate database
+        run: sqlx migrate run
+        working-directory: battlefield-server
+        env:
+          DATABASE_URL: postgresql://battlefield:battlefield@localhost:5432/battlefield
+      - name: Check sqlx-data.json
+        run: cargo sqlx prepare --check -- --lib
+        working-directory: battlefield-server
+        env:
+          DATABASE_URL: postgresql://battlefield:battlefield@localhost:5432/battlefield
