@@ -81,3 +81,15 @@ impl Handler<Command> for Game {
         MessageResult(process(command, &mut self.state))
     }
 }
+
+#[derive(Message)]
+#[rtype(result = "State")]
+pub struct GetState;
+
+impl Handler<GetState> for Game {
+    type Result = MessageResult<GetState>;
+
+    fn handle(&mut self, GetState: GetState, _ctx: &mut Self::Context) -> Self::Result {
+        MessageResult(self.state.clone())
+    }
+}

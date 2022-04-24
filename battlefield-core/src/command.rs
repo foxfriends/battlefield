@@ -1,5 +1,7 @@
+use serde::Deserialize;
 use std::str::FromStr;
 
+#[derive(Deserialize, Debug)]
 pub struct Command(String);
 
 impl FromStr for Command {
