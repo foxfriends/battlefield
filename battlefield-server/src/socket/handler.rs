@@ -1,5 +1,4 @@
-use crate::directory::{Directory, Lookup};
-use crate::game::Command;
+use crate::game::{Game, Command};
 use actix::prelude::*;
 use actix_web_actors::ws;
 use serde::Serialize;
@@ -7,8 +6,14 @@ use serde_json::Value;
 use uuid::Uuid;
 
 pub(super) struct SocketHandler {
-    pub game_id: Uuid,
-    pub directory: Addr<Directory>,
+    game_id: Uuid,
+    game: Addr<Game>,
+}
+
+impl SocketHandler {
+    pub fn new(game_id: Uuid, game: Addr<Game>) -> Self {
+        Self { game_id, game }
+    }
 }
 
 impl Actor for SocketHandler {
@@ -35,22 +40,9 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for SocketHandler {
             Ok(ws::Message::Text(text)) => {
                 match text.parse() {
                     Ok(command) => {
-                        let directory = self.directory.clone();
-                        let id = self.game_id;
+                        let game = self.game.clone();
                         let socket = ctx.address();
                         let future = async move {
-                            let game = directory
-                                .send(Lookup(id))
-                                .await
-                                .map_err(anyhow::Error::from)
-                                .and_then(|result| result);
-                            let game = match game {
-                                Ok(game) => game,
-                                Err(error) => {
-                                    socket.send(Response::error(error)).await.ok();
-                                    return;
-                                }
-                            };
                             let value = game
                                 .send(Command(command))
                                 .await

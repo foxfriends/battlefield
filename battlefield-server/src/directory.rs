@@ -50,11 +50,11 @@ impl Handler<Lookup> for Directory {
 }
 
 #[derive(Message)]
-#[rtype(result = "anyhow::Result<Uuid>")]
+#[rtype(result = "anyhow::Result<(Uuid, Addr<Game>)>")]
 pub struct New;
 
 impl Handler<New> for Directory {
-    type Result = ResponseFuture<anyhow::Result<Uuid>>;
+    type Result = ResponseFuture<anyhow::Result<(Uuid, Addr<Game>)>>;
 
     fn handle(&mut self, New: New, _ctx: &mut Self::Context) -> Self::Result {
         let directory = self.clone();
@@ -62,8 +62,9 @@ impl Handler<New> for Directory {
             let game = Game::new(directory.db.clone()).await?;
             let id = game.id();
             let mut games = directory.games.lock().await;
-            games.insert(id, game.start());
-            Ok(id)
+            let addr = game.start();
+            games.insert(id, addr.clone());
+            Ok((id, addr))
         })
     }
 }

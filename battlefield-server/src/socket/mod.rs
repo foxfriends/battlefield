@@ -1,4 +1,4 @@
-use crate::directory::{Directory, New};
+use crate::directory::{Directory, New, Lookup};
 use actix::prelude::*;
 use actix_web::{error, web, Error, HttpRequest, HttpResponse};
 use actix_web_actors::ws;
@@ -20,11 +20,15 @@ pub(super) async fn connect(
     path: web::Path<Params>,
     directory: web::Data<Addr<Directory>>,
 ) -> Result<HttpResponse, Error> {
+    let game = directory.send(Lookup(path.game_id)).await
+        .map_err(|error| {
+            error::ErrorInternalServerError(format!("Game directory has disconnected: {error}"))
+        })?
+        .map_err(|error| {
+            error::ErrorInternalServerError(format!("Game failed to be created: {error}"))
+        })?;
     ws::start(
-        SocketHandler {
-            game_id: path.game_id,
-            directory: (**directory).clone(),
-        },
+        SocketHandler::new(path.game_id, game),
         &req,
         stream,
     )
@@ -35,7 +39,7 @@ pub(super) async fn create(
     stream: web::Payload,
     directory: web::Data<Addr<Directory>>,
 ) -> Result<HttpResponse, Error> {
-    let game_id = directory
+    let (game_id, game) = directory
         .send(New)
         .await
         .map_err(|error| {
@@ -45,10 +49,7 @@ pub(super) async fn create(
             error::ErrorInternalServerError(format!("Game failed to be created: {error}"))
         })?;
     ws::start(
-        SocketHandler {
-            game_id,
-            directory: (**directory).clone(),
-        },
+        SocketHandler::new(game_id, game),
         &req,
         stream,
     )
