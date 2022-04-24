@@ -1,6 +1,6 @@
 use crate::db::PgPool;
 use actix::prelude::*;
-use battlefield_core::{process, State, Scenario};
+use battlefield_core::{process, Scenario, State};
 use serde_json::Value;
 use uuid::Uuid;
 
@@ -18,9 +18,10 @@ impl Game {
 
     pub async fn new(db: PgPool) -> anyhow::Result<Self> {
         let mut conn = db.acquire().await?;
-        let game = sqlx::query!("INSERT INTO games (id) values (default) RETURNING id, state, scenario")
-            .fetch_one(&mut conn)
-            .await?;
+        let game =
+            sqlx::query!("INSERT INTO games (id) values (default) RETURNING id, state, scenario")
+                .fetch_one(&mut conn)
+                .await?;
         let state = serde_json::from_value(game.state)?;
         let scenario = serde_json::from_value(game.scenario)?;
         Ok(Self {
@@ -38,7 +39,12 @@ impl Game {
             .await?;
         let state = serde_json::from_value(game.state)?;
         let scenario = serde_json::from_value(game.scenario)?;
-        Ok(Self { id, state, scenario, db })
+        Ok(Self {
+            id,
+            state,
+            scenario,
+            db,
+        })
     }
 }
 
