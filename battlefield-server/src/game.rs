@@ -46,6 +46,7 @@ impl Actor for Game {
     type Context = Context<Self>;
 
     fn stopped(&mut self, ctx: &mut Self::Context) {
+        log::debug!("Stopping and saving game {}", self.id);
         let db = self.db.clone();
         let json_state = serde_json::to_value(&self.state).unwrap();
         let id = self.id;

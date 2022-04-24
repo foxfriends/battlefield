@@ -18,6 +18,14 @@ impl SocketHandler {
 
 impl Actor for SocketHandler {
     type Context = ws::WebsocketContext<Self>;
+
+    fn started(&mut self, _ctx: &mut Self::Context) {
+        log::debug!("SocketHandler for {} started", self.game_id);
+    }
+
+    fn stopped(&mut self, _ctx: &mut Self::Context) {
+        log::debug!("SocketHandler for {} stopped", self.game_id);
+    }
 }
 
 #[derive(Serialize, Message)]

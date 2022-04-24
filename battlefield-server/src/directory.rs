@@ -1,6 +1,7 @@
 use crate::db::PgPool;
 use crate::game::Game;
 use actix::prelude::*;
+use actix::WeakAddr;
 use std::collections::{hash_map::Entry, HashMap};
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -8,7 +9,7 @@ use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct Directory {
-    games: Arc<Mutex<HashMap<Uuid, Addr<Game>>>>,
+    games: Arc<Mutex<HashMap<Uuid, WeakAddr<Game>>>>,
     db: PgPool,
 }
 
@@ -37,11 +38,21 @@ impl Handler<Lookup> for Directory {
         Box::pin(async move {
             let mut games = directory.games.lock().await;
             match games.entry(id) {
-                Entry::Occupied(entry) => Ok(entry.get().clone()),
+                Entry::Occupied(mut entry) => {
+                    match entry.get().upgrade() {
+                        Some(addr) => Ok(addr),
+                        None => {
+                            let game = Game::load(id, directory.db.clone()).await?;
+                            let addr = game.start();
+                            entry.insert(addr.downgrade());
+                            Ok(addr)
+                        }
+                    }
+                }
                 Entry::Vacant(entry) => {
                     let game = Game::load(id, directory.db.clone()).await?;
                     let addr = game.start();
-                    entry.insert(addr.clone());
+                    entry.insert(addr.downgrade());
                     Ok(addr)
                 }
             }
@@ -63,7 +74,7 @@ impl Handler<New> for Directory {
             let id = game.id();
             let mut games = directory.games.lock().await;
             let addr = game.start();
-            games.insert(id, addr.clone());
+            games.insert(id, addr.downgrade());
             Ok((id, addr))
         })
     }
