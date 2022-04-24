@@ -1,21 +1,27 @@
 use crate::db::PgPool;
+use crate::socket::{Notification, SocketHandler};
 use actix::prelude::*;
-use battlefield_core::{Scenario, State};
+use actix::WeakAddr;
+use battlefield_core::{commands, Scenario, State};
+use json_patch::diff;
 use uuid::Uuid;
 
 mod command;
 mod get_scenario;
 mod get_state;
+mod subscribe;
 
 pub use command::Command;
 pub use get_scenario::GetScenario;
 pub use get_state::GetState;
+pub use subscribe::Subscribe;
 
 pub struct Game {
     id: Uuid,
     scenario: Scenario,
     state: State,
     db: PgPool,
+    subscribers: Vec<WeakAddr<SocketHandler>>,
 }
 
 impl Game {
@@ -38,6 +44,7 @@ impl Game {
             scenario,
             state,
             db,
+            subscribers: vec![],
         })
     }
 
@@ -53,7 +60,22 @@ impl Game {
             state,
             scenario,
             db,
+            subscribers: vec![],
         })
+    }
+
+    pub fn commit(&mut self, state: State) {
+        let patch = diff(self.state.as_ref(), state.as_ref());
+        let actions = commands(&self.scenario, &state);
+        self.state = state;
+        for subscriber in &self.subscribers {
+            if let Some(addr) = subscriber.upgrade() {
+                addr.do_send(Notification::Update {
+                    patch: patch.clone(),
+                    actions: actions.clone(),
+                });
+            }
+        }
     }
 }
 

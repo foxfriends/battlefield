@@ -333,6 +333,7 @@ dependencies = [
  "battlefield-core",
  "bytestring",
  "dotenv",
+ "json-patch",
  "lazy_static",
  "log",
  "pretty_env_logger",
@@ -863,6 +864,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "671a26f820db17c2a2750743f1dd03bafd15b98c9f30c7c2628c024c05d73397"
 dependencies = [
  "wasm-bindgen",
+]
+
+[[package]]
+name = "json-patch"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f995a3c8f2bc3dd52a18a583e90f9ec109c047fa1603a853e46bcda14d2e279d"
+dependencies = [
+ "serde",
+ "serde_json",
+ "treediff",
 ]
 
 [[package]]
@@ -1675,6 +1687,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f54c8ca710e81886d498c2fd3331b56c93aa248d49de2222ad2742247c60072f"
 dependencies = [
  "lazy_static",
+]
+
+[[package]]
+name = "treediff"
+version = "3.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "761e8d5ad7ce14bb82b7e61ccc0ca961005a275a060b9644a2431aa11553c2ff"
+dependencies = [
+ "serde_json",
 ]
 
 [[package]]

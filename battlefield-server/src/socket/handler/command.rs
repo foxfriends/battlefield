@@ -1,4 +1,4 @@
-use super::{Response, SocketHandler};
+use super::{Notification, SocketHandler};
 use crate::game;
 use actix::prelude::*;
 
@@ -13,14 +13,14 @@ impl Handler<Command> for SocketHandler {
         let game = self.game.clone();
         let socket = ctx.address();
         Box::pin(async move {
-            let response = game
+            let result = game
                 .send(game::Command(command))
                 .await
                 .map_err(anyhow::Error::from)
-                .and_then(|result| result)
-                .map(Response::Ok)
-                .unwrap_or_else(Response::error);
-            socket.do_send(response);
+                .and_then(|result| result);
+            if let Err(error) = result {
+                socket.do_send(Notification::error(error));
+            }
         })
     }
 }

@@ -15,3 +15,7 @@ pub fn process(
 ) -> anyhow::Result<Value> {
     Ok(Value::default())
 }
+
+pub fn commands(_scenario: &Scenario, _state: &State) -> Vec<Command> {
+    vec![]
+}

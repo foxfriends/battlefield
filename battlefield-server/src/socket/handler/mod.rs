@@ -1,19 +1,19 @@
-use crate::game::{Game, GetScenario, GetState};
+use crate::game::{Game, GetScenario, GetState, Subscribe};
 use actix::prelude::*;
 use actix_web_actors::ws;
 use serde::Deserialize;
-use serde_json::json;
 use uuid::Uuid;
 
 mod command;
-mod response;
+mod notification;
 mod sync;
 
+pub use notification::Notification;
+
 use command::Command;
-use response::Response;
 use sync::Sync;
 
-pub(super) struct SocketHandler {
+pub struct SocketHandler {
     game_id: Uuid,
     game: Addr<Game>,
 }
@@ -32,14 +32,28 @@ impl Actor for SocketHandler {
         let game = self.game.clone();
         let game_id = self.game_id;
         let socket = ctx.address();
+        game.do_send(Subscribe(socket.downgrade()));
         let future = async move {
-            let state = game.send(GetState).await.unwrap();
-            let scenario = game.send(GetScenario).await.unwrap();
-            socket.do_send(Response::Ok(json! {{
-                "id": game_id,
-                "scenario": scenario,
-                "state": state,
-            }}));
+            let (state, actions) = match game.send(GetState).await {
+                Ok(state) => state,
+                Err(error) => {
+                    socket.do_send(Notification::error(error));
+                    return;
+                }
+            };
+            let scenario = match game.send(GetScenario).await {
+                Ok(scenario) => scenario,
+                Err(error) => {
+                    socket.do_send(Notification::error(error));
+                    return;
+                }
+            };
+            socket.do_send(Notification::Init {
+                id: game_id,
+                scenario,
+                state,
+                actions,
+            });
         };
         future.into_actor(self).spawn(ctx);
     }
@@ -62,7 +76,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for SocketHandler {
             Ok(ws::Message::Text(text)) => match serde_json::from_str(&text) {
                 Ok(SocketMessage::Sync) => ctx.notify(Sync),
                 Ok(SocketMessage::Command(command)) => ctx.notify(Command(command)),
-                Err(error) => ctx.notify(Response::error(error)),
+                Err(error) => ctx.notify(Notification::error(error)),
             },
             _ => {}
         }
