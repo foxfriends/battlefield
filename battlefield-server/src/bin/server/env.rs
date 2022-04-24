@@ -1,5 +1,6 @@
 use lazy_static::lazy_static;
 use std::net::IpAddr;
+use std::path::PathBuf;
 
 lazy_static! {
     pub static ref HOST: IpAddr = std::env::var("HOST")
@@ -12,4 +13,8 @@ lazy_static! {
         .unwrap();
     pub static ref DATABASE_URL: String =
         std::env::var("DATABASE_URL").expect("environment variable `DATABASE_URL` is required");
+    pub static ref SCENARIOS_DIR: PathBuf = std::env::var("SCENARIOS_DIR")
+        .expect("environment variable `SCENARIOS_DIR` is required")
+        .parse()
+        .unwrap();
 }

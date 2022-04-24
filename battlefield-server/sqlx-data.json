@@ -1,6 +1,6 @@
 {
   "db": "PostgreSQL",
-  "2f566f99ff7858d4cd2c23b649c60653e3f88f601e1d2dab201540b7d5086283": {
+  "33240f2b8bceecaadac06b3b58b2af24200fda1fd96ab7aa892ad7734e096cec": {
     "describe": {
       "columns": [
         {
@@ -12,23 +12,19 @@
           "name": "state",
           "ordinal": 1,
           "type_info": "Jsonb"
-        },
-        {
-          "name": "scenario",
-          "ordinal": 2,
-          "type_info": "Jsonb"
         }
       ],
       "nullable": [
         false,
-        false,
         false
       ],
       "parameters": {
-        "Left": []
+        "Left": [
+          "Jsonb"
+        ]
       }
     },
-    "query": "INSERT INTO games (id) values (default) RETURNING id, state, scenario"
+    "query": "INSERT INTO games (scenario) values ($1) RETURNING id, state"
   },
   "b91c22b6ac289754ff5840413b0d475d6b1fce97914abe300875f9b8e9d7b46c": {
     "describe": {

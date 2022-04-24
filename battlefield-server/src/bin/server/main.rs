@@ -13,7 +13,7 @@ async fn main() -> anyhow::Result<()> {
 
     log::info!("Battlefield served on {}:{}", host, port);
 
-    let battlefield = BattlefieldServer::new(&env::DATABASE_URL).await?;
+    let battlefield = BattlefieldServer::new(&env::DATABASE_URL, &env::SCENARIOS_DIR).await?;
 
     HttpServer::new(move || {
         App::new()

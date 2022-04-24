@@ -1,0 +1,20 @@
+name = "Field"
+description = "An open field with nowhere to hide."
+
+[map]
+tiles = [
+    ["p", "p", "p", "p", "p", "p", "p", "p", "p", "p"],
+    ["p", "p", "p", "p", "p", "p", "p", "p", "p", "p"],
+    ["p", "p", "p", "p", "p", "p", "p", "p", "p", "p"],
+    ["p", "p", "p", "p", "p", "p", "p", "p", "p", "p"],
+    ["p", "p", "p", "p", "p", "p", "p", "p", "p", "p"],
+    ["p", "p", "p", "p", "p", "p", "p", "p", "p", "p"],
+    ["p", "p", "p", "p", "p", "p", "p", "p", "p", "p"],
+    ["p", "p", "p", "p", "p", "p", "p", "p", "p", "p"],
+    ["p", "p", "p", "p", "p", "p", "p", "p", "p", "p"],
+    ["p", "p", "p", "p", "p", "p", "p", "p", "p", "p"],
+]
+
+[map.tile_types.p]
+name = "Plains"
+description = "Open grassy plains. Does not provide much cover."

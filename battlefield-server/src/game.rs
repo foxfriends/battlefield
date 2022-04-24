@@ -16,14 +16,16 @@ impl Game {
         self.id
     }
 
-    pub async fn new(db: PgPool) -> anyhow::Result<Self> {
+    pub async fn new(scenario: Scenario, db: PgPool) -> anyhow::Result<Self> {
         let mut conn = db.acquire().await?;
-        let game =
-            sqlx::query!("INSERT INTO games (id) values (default) RETURNING id, state, scenario")
-                .fetch_one(&mut conn)
-                .await?;
+        let scenario_json = serde_json::to_value(&scenario).unwrap();
+        let game = sqlx::query!(
+            "INSERT INTO games (scenario) values ($1) RETURNING id, state",
+            scenario_json
+        )
+        .fetch_one(&mut conn)
+        .await?;
         let state = serde_json::from_value(game.state)?;
-        let scenario = serde_json::from_value(game.scenario)?;
         Ok(Self {
             id: game.id,
             scenario,
