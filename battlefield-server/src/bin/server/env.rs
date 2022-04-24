@@ -10,4 +10,6 @@ lazy_static! {
         .unwrap_or_else(|_| "8000".to_owned())
         .parse()
         .unwrap();
+    pub static ref DATABASE_URL: String =
+        std::env::var("DATABASE_URL").expect("environment variable `DATABASE_URL` is required");
 }
