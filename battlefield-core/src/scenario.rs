@@ -2,7 +2,19 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 
-type TileId = String;
+#[derive(Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct TileId(String);
+
+#[derive(Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct TerritoryId(String);
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Location {
+    tile_type: TileId,
+    territory: Option<TerritoryId>,
+}
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Tile {
@@ -15,7 +27,7 @@ pub struct Tile {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Map {
     tile_types: HashMap<TileId, Tile>,
-    tiles: Vec<Vec<TileId>>,
+    tiles: Vec<Vec<Location>>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
