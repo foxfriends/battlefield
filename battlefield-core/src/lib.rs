@@ -1,5 +1,7 @@
 use serde_json::Value;
 
+mod string_or_struct;
+
 mod command;
 mod scenario;
 mod state;
