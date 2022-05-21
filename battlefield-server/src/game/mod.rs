@@ -65,7 +65,9 @@ impl Game {
     }
 
     pub fn commit(&mut self, state: State) {
-        let patch = diff(self.state.as_ref(), state.as_ref());
+        let old_state_json = serde_json::to_value(&self.state).unwrap();
+        let new_state_json = serde_json::to_value(&state).unwrap();
+        let patch = diff(&old_state_json, &new_state_json);
         let actions = commands(&self.scenario, &state);
         self.state = state;
         for subscriber in &self.subscribers {
