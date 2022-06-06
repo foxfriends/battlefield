@@ -19,5 +19,5 @@ tiles = [
 name = "Plains"
 description = "Open grassy plains. Does not provide much cover."
 
-[modules.core]
-version = "1"
+[modules]
+core = "1"

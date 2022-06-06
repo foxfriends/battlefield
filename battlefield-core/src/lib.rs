@@ -1,23 +1,12 @@
-use serde_json::Value;
-
-mod string_or_struct;
+mod util;
 
 mod command;
+mod engine;
+mod module;
 mod scenario;
 mod state;
 
 pub use command::Command;
+pub use engine::Engine;
 pub use scenario::Scenario;
 pub use state::State;
-
-pub fn process(
-    _command: Command,
-    _scenario: &Scenario,
-    _state: &mut State,
-) -> anyhow::Result<Value> {
-    Ok(Value::default())
-}
-
-pub fn commands(_scenario: &Scenario, _state: &State) -> Vec<Command> {
-    vec![]
-}
