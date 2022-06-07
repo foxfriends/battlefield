@@ -1,16 +1,18 @@
 use super::Game;
 use actix::prelude::*;
-use battlefield_core::{commands, Command, State};
+use battlefield_core::{Command, State};
 
 #[derive(Message)]
-#[rtype(result = "(State, Vec<Command>)")]
+#[rtype(result = "anyhow::Result<(State, Vec<Command>)>")]
 pub struct GetState;
 
 impl Handler<GetState> for Game {
     type Result = MessageResult<GetState>;
 
     fn handle(&mut self, GetState: GetState, _ctx: &mut Self::Context) -> Self::Result {
-        let actions = commands(&self.scenario, &self.state);
-        MessageResult((self.state.clone(), actions))
+        match self.engine.commands(&self.scenario, &self.state) {
+            Ok(actions) => MessageResult(Ok((self.state.clone(), actions))),
+            Err(error) => MessageResult(Err(error)),
+        }
     }
 }

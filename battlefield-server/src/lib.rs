@@ -1,33 +1,33 @@
 use actix::prelude::*;
 use actix_web::web::{self, ServiceConfig};
-use std::path::Path;
+use battlefield_core::Engine;
+use std::sync::Arc;
 
 mod db;
 mod directory;
 mod game;
-mod scenarios;
 mod socket;
 
 use db::PgPool;
 use directory::Directory;
-use scenarios::Scenarios;
 
 #[derive(Clone)]
 pub struct BattlefieldServer {
     db: PgPool,
+    engine: Arc<Engine>,
     directory: Addr<Directory>,
-    scenarios: Scenarios,
 }
 
 impl BattlefieldServer {
-    pub async fn new(database_url: &str, scenarios_dir: &Path) -> anyhow::Result<Self> {
+    pub async fn new(database_url: &str, engine: Engine) -> anyhow::Result<Self> {
         let db = db::connect(database_url).await?;
-        let directory = Directory::new(db.clone()).start();
-        let scenarios = Scenarios::new(scenarios_dir.to_owned());
+        let engine = Arc::new(engine);
+        let directory = Directory::new(db.clone(), engine.clone()).start();
+
         Ok(Self {
             db,
+            engine,
             directory,
-            scenarios,
         })
     }
 
@@ -35,7 +35,7 @@ impl BattlefieldServer {
         config
             .app_data(web::Data::new(self.directory.clone()))
             .app_data(web::Data::new(self.db.clone()))
-            .app_data(web::Data::new(self.scenarios.clone()))
+            .app_data(web::Data::new(self.engine.clone()))
             .route("/ws/new/{scenario}", web::get().to(socket::create))
             .route("/ws/{game_id}", web::get().to(socket::connect));
     }

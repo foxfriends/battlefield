@@ -35,7 +35,11 @@ impl Actor for SocketHandler {
         game.do_send(Subscribe(socket.downgrade()));
         let future = async move {
             let (state, actions) = match game.send(GetState).await {
-                Ok(state) => state,
+                Ok(Ok(state)) => state,
+                Ok(Err(error)) => {
+                    socket.do_send(Notification::error(error));
+                    return;
+                }
                 Err(error) => {
                     socket.do_send(Notification::error(error));
                     return;
