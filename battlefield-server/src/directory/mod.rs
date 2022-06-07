@@ -5,7 +5,7 @@ use actix::WeakAddr;
 use battlefield_core::Engine;
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::{Mutex, RwLock};
+use tokio::sync::Mutex;
 use uuid::Uuid;
 
 mod lookup;
@@ -17,15 +17,15 @@ pub use new::New;
 #[derive(Clone)]
 pub struct Directory {
     games: Arc<Mutex<HashMap<Uuid, WeakAddr<Game>>>>,
-    engine: Arc<RwLock<Engine>>,
+    engine: Arc<Engine>,
     db: PgPool,
 }
 
 impl Directory {
-    pub fn new(db: PgPool, engine: Engine) -> Self {
+    pub fn new(db: PgPool, engine: Arc<Engine>) -> Self {
         Self {
             games: Default::default(),
-            engine: Arc::new(RwLock::new(engine)),
+            engine,
             db,
         }
     }

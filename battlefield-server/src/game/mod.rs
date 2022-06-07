@@ -4,7 +4,6 @@ use actix::prelude::*;
 use actix::WeakAddr;
 use battlefield_core::{Engine, Scenario, State};
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use uuid::Uuid;
 
 mod command;
@@ -25,7 +24,7 @@ pub struct Game {
     state: State,
     db: PgPool,
     subscribers: Vec<WeakAddr<SocketHandler>>,
-    engine: Arc<RwLock<Engine>>,
+    engine: Arc<Engine>,
 }
 
 impl Game {
@@ -33,11 +32,7 @@ impl Game {
         self.id
     }
 
-    pub async fn new(
-        scenario: Scenario,
-        db: PgPool,
-        engine: Arc<RwLock<Engine>>,
-    ) -> anyhow::Result<Self> {
+    pub async fn new(scenario: Scenario, db: PgPool, engine: Arc<Engine>) -> anyhow::Result<Self> {
         let mut conn = db.acquire().await?;
         let scenario_json = serde_json::to_value(&scenario).unwrap();
         let game = sqlx::query!(
@@ -57,7 +52,7 @@ impl Game {
         })
     }
 
-    pub async fn load(id: Uuid, db: PgPool, engine: Arc<RwLock<Engine>>) -> anyhow::Result<Self> {
+    pub async fn load(id: Uuid, db: PgPool, engine: Arc<Engine>) -> anyhow::Result<Self> {
         let mut conn = db.acquire().await?;
         let game = sqlx::query!("SELECT state, scenario FROM games WHERE id = $1", id)
             .fetch_one(&mut conn)

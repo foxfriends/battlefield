@@ -17,4 +17,8 @@ lazy_static! {
         .expect("environment variable `SCENARIOS_DIR` is required")
         .parse()
         .unwrap();
+    pub static ref MODULES_DIR: PathBuf = std::env::var("MODULES_DIR")
+        .expect("environment variable `MODULES_DIR` is required")
+        .parse()
+        .unwrap();
 }

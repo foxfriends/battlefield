@@ -9,7 +9,7 @@ use json_patch::diff;
 pub struct Commit(pub State);
 
 impl Handler<Commit> for Game {
-    type Result = ResponseFuture<anyhow::Result<()>>;
+    type Result = MessageResult<Commit>;
 
     fn handle(&mut self, Commit(new_state): Commit, _ctx: &mut Self::Context) -> Self::Result {
         let old_state_json = serde_json::to_value(&self.state).unwrap();
@@ -17,22 +17,18 @@ impl Handler<Commit> for Game {
         let patch = diff(&old_state_json, &new_state_json);
         self.state = new_state;
 
-        let state = self.state.clone();
-        let engine = self.engine.clone();
-        let scenario = self.scenario.clone();
-        let subscribers = self.subscribers.clone();
-        Box::pin(async move {
-            let engine = engine.read().await;
-            let actions = engine.commands(&scenario, &state)?;
-            for subscriber in &subscribers {
-                if let Some(addr) = subscriber.upgrade() {
-                    addr.do_send(Notification::Update {
-                        patch: patch.clone(),
-                        actions: actions.clone(),
-                    });
-                }
+        let actions = match self.engine.commands(&self.scenario, &self.state) {
+            Ok(actions) => actions,
+            Err(error) => return MessageResult(Err(error)),
+        };
+        for subscriber in &self.subscribers {
+            if let Some(addr) = subscriber.upgrade() {
+                addr.do_send(Notification::Update {
+                    patch: patch.clone(),
+                    actions: actions.clone(),
+                });
             }
-            Ok(())
-        })
+        }
+        MessageResult(Ok(()))
     }
 }

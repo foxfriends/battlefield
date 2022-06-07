@@ -15,7 +15,6 @@ impl Handler<Command> for Game {
         let engine = self.engine.clone();
         let addr = ctx.address();
         Box::pin(async move {
-            let engine = engine.read().await;
             let response = match engine.perform(command, &scenario, &mut state) {
                 Ok(response) => response,
                 Err(error) => return Err(error),

@@ -13,9 +13,9 @@ pub use tile::*;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Scenario {
-    name: String,
-    description: String,
-    map: Map,
+    pub(crate) name: String,
+    pub(crate) description: String,
+    pub(crate) map: Map,
     #[serde(deserialize_with = "module_map")]
     pub(crate) modules: HashMap<String, ModuleConfig>,
 }
