@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::{Command, Scenario, State};
 use serde_json::Value;
 use std::path::PathBuf;
