@@ -60,19 +60,26 @@ impl Engine {
         }
     }
 
-    pub fn commands(&mut self, scenario: &Scenario, state: &State) -> anyhow::Result<Vec<Command>> {
+    fn require_module(&self, name: &str, version: &str) -> anyhow::Result<&Module> {
+        let id = ModuleId::new(name.to_owned(), version.to_owned());
+        self.modules
+            .get(&id)
+            .ok_or_else(|| anyhow::anyhow!("Module {id} not found"))
+    }
+
+    pub fn commands(&self, scenario: &Scenario, state: &State) -> anyhow::Result<Vec<Command>> {
         scenario
             .modules
             .iter()
             .map(|(name, config)| {
-                let module = self.resolve_module(name, &config.version)?;
+                let module = self.require_module(name, &config.version)?;
                 Ok(module.commands(scenario, state))
             })
             .collect::<anyhow::Result<Flatten<Vec<Command>>>>()
             .map(|f| f.0)
     }
 
-    pub fn process(
+    pub fn perform(
         &self,
         _command: Command,
         _scenario: &Scenario,

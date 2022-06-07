@@ -1,17 +1,20 @@
 use crate::db::PgPool;
-use crate::socket::{Notification, SocketHandler};
+use crate::socket::SocketHandler;
 use actix::prelude::*;
 use actix::WeakAddr;
-use battlefield_core::{commands, Scenario, State};
-use json_patch::diff;
+use battlefield_core::{Engine, Scenario, State};
+use std::sync::Arc;
+use tokio::sync::RwLock;
 use uuid::Uuid;
 
 mod command;
+mod commit;
 mod get_scenario;
 mod get_state;
 mod subscribe;
 
 pub use command::Command;
+use commit::Commit;
 pub use get_scenario::GetScenario;
 pub use get_state::GetState;
 pub use subscribe::Subscribe;
@@ -22,6 +25,7 @@ pub struct Game {
     state: State,
     db: PgPool,
     subscribers: Vec<WeakAddr<SocketHandler>>,
+    engine: Arc<RwLock<Engine>>,
 }
 
 impl Game {
@@ -29,7 +33,11 @@ impl Game {
         self.id
     }
 
-    pub async fn new(scenario: Scenario, db: PgPool) -> anyhow::Result<Self> {
+    pub async fn new(
+        scenario: Scenario,
+        db: PgPool,
+        engine: Arc<RwLock<Engine>>,
+    ) -> anyhow::Result<Self> {
         let mut conn = db.acquire().await?;
         let scenario_json = serde_json::to_value(&scenario).unwrap();
         let game = sqlx::query!(
@@ -45,10 +53,11 @@ impl Game {
             state,
             db,
             subscribers: vec![],
+            engine,
         })
     }
 
-    pub async fn load(id: Uuid, db: PgPool) -> anyhow::Result<Self> {
+    pub async fn load(id: Uuid, db: PgPool, engine: Arc<RwLock<Engine>>) -> anyhow::Result<Self> {
         let mut conn = db.acquire().await?;
         let game = sqlx::query!("SELECT state, scenario FROM games WHERE id = $1", id)
             .fetch_one(&mut conn)
@@ -61,23 +70,8 @@ impl Game {
             scenario,
             db,
             subscribers: vec![],
+            engine,
         })
-    }
-
-    pub fn commit(&mut self, state: State) {
-        let old_state_json = serde_json::to_value(&self.state).unwrap();
-        let new_state_json = serde_json::to_value(&state).unwrap();
-        let patch = diff(&old_state_json, &new_state_json);
-        let actions = commands(&self.scenario, &state);
-        self.state = state;
-        for subscriber in &self.subscribers {
-            if let Some(addr) = subscriber.upgrade() {
-                addr.do_send(Notification::Update {
-                    patch: patch.clone(),
-                    actions: actions.clone(),
-                });
-            }
-        }
     }
 }
 

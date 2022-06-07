@@ -1,4 +1,5 @@
 use actix_web::{middleware, App, HttpServer};
+use battlefield_core::Engine;
 use battlefield_server::BattlefieldServer;
 
 mod env;
@@ -13,7 +14,9 @@ async fn main() -> anyhow::Result<()> {
 
     log::info!("Battlefield served on {}:{}", host, port);
 
-    let battlefield = BattlefieldServer::new(&env::DATABASE_URL, &env::SCENARIOS_DIR).await?;
+    let engine = Engine::new();
+    let battlefield =
+        BattlefieldServer::new(&env::DATABASE_URL, &env::SCENARIOS_DIR, engine).await?;
 
     HttpServer::new(move || {
         App::new()

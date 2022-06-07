@@ -17,7 +17,7 @@ impl Module {
         // NOTE: these are all unwrapping because this method should only be called
         // after the caller has already validated the path. That may have to change
         // someday
-        let mut segments = path.file_name().unwrap().to_str().unwrap().split("@");
+        let mut segments = path.file_name().unwrap().to_str().unwrap().split('@');
         let name = segments.next().unwrap();
         let version = segments.next().unwrap();
         Ok(Self {
@@ -31,7 +31,7 @@ impl Module {
         vec![]
     }
 
-    pub fn process(
+    pub fn perform(
         &self,
         _command: Command,
         _scenario: &Scenario,

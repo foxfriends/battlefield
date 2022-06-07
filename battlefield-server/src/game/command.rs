@@ -1,6 +1,5 @@
-use super::Game;
+use super::{Commit, Game};
 use actix::prelude::*;
-use battlefield_core::process;
 use serde_json::Value;
 
 #[derive(Message)]
@@ -8,15 +7,21 @@ use serde_json::Value;
 pub struct Command(pub battlefield_core::Command);
 
 impl Handler<Command> for Game {
-    type Result = MessageResult<Command>;
+    type Result = ResponseFuture<anyhow::Result<Value>>;
 
-    fn handle(&mut self, Command(command): Command, _ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, Command(command): Command, ctx: &mut Self::Context) -> Self::Result {
         let mut state = self.state.clone();
-        let response = match process(command, &self.scenario, &mut state) {
-            Ok(response) => response,
-            Err(error) => return MessageResult(Err(error)),
-        };
-        self.commit(state);
-        MessageResult(Ok(response))
+        let scenario = self.scenario.clone();
+        let engine = self.engine.clone();
+        let addr = ctx.address();
+        Box::pin(async move {
+            let engine = engine.read().await;
+            let response = match engine.perform(command, &scenario, &mut state) {
+                Ok(response) => response,
+                Err(error) => return Err(error),
+            };
+            addr.send(Commit(state)).await??;
+            Ok(response)
+        })
     }
 }

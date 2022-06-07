@@ -3,11 +3,11 @@ use crate::game::GetState;
 use actix::prelude::*;
 
 #[derive(Message)]
-#[rtype(result = "()")]
+#[rtype(result = "anyhow::Result<()>")]
 pub(super) struct Sync;
 
 impl Handler<Sync> for SocketHandler {
-    type Result = ResponseFuture<()>;
+    type Result = ResponseFuture<anyhow::Result<()>>;
 
     fn handle(&mut self, Sync: Sync, ctx: &mut Self::Context) -> Self::Result {
         let game = self.game.clone();
@@ -16,9 +16,13 @@ impl Handler<Sync> for SocketHandler {
             let response = game
                 .send(GetState)
                 .await
-                .map(|(state, actions)| Notification::Sync { state, actions })
+                .map(|result| match result {
+                    Ok((state, actions)) => Notification::Sync { state, actions },
+                    Err(error) => Notification::error(error),
+                })
                 .unwrap_or_else(Notification::error);
             socket.do_send(response);
+            Ok(())
         })
     }
 }

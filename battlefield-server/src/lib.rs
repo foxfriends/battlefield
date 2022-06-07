@@ -1,5 +1,6 @@
 use actix::prelude::*;
 use actix_web::web::{self, ServiceConfig};
+use battlefield_core::Engine;
 use std::path::Path;
 
 mod db;
@@ -20,9 +21,13 @@ pub struct BattlefieldServer {
 }
 
 impl BattlefieldServer {
-    pub async fn new(database_url: &str, scenarios_dir: &Path) -> anyhow::Result<Self> {
+    pub async fn new(
+        database_url: &str,
+        scenarios_dir: &Path,
+        engine: Engine,
+    ) -> anyhow::Result<Self> {
         let db = db::connect(database_url).await?;
-        let directory = Directory::new(db.clone()).start();
+        let directory = Directory::new(db.clone(), engine).start();
         let scenarios = Scenarios::new(scenarios_dir.to_owned());
         Ok(Self {
             db,
