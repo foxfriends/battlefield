@@ -8,10 +8,6 @@ mod builder;
 
 pub use builder::EngineBuilder;
 
-// TODO: make this a real thing
-#[derive(Copy, Clone, Debug)]
-pub struct ModuleNotFound;
-
 #[derive(Default)]
 pub struct Engine {
     scenarios: Vec<Scenario>,
