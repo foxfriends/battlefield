@@ -1,6 +1,6 @@
 use crate::module::{Module, ModuleId};
 use crate::util::flatten::Flatten;
-use crate::{Command, Scenario, State};
+use crate::{Command, Error, ErrorKind, Scenario, State};
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -19,18 +19,18 @@ pub struct Engine {
 }
 
 impl Engine {
-    fn require_module(&self, name: &str, version: &str) -> anyhow::Result<&Module> {
+    fn require_module(&self, name: &str, version: &str) -> crate::Result<&Module> {
         let id = ModuleId::new(name.to_owned(), version.to_owned());
-        self.modules
-            .get(&id)
-            .ok_or_else(|| anyhow::anyhow!("Module {id} not found"))
+        self.modules.get(&id).ok_or_else(|| {
+            Error::internal(ErrorKind::ModuleNotFound, format!("Module {id} not found"))
+        })
     }
 
     pub fn scenario(&self, name: &str) -> Option<&Scenario> {
         self.scenarios.iter().find(|scenario| scenario.name == name)
     }
 
-    pub fn commands(&self, scenario: &Scenario, state: &State) -> anyhow::Result<Vec<Command>> {
+    pub fn commands(&self, scenario: &Scenario, state: &State) -> crate::Result<Vec<Command>> {
         scenario
             .modules
             .iter()
@@ -38,7 +38,7 @@ impl Engine {
                 let module = self.require_module(name, &config.version)?;
                 Ok(module.commands(scenario, state))
             })
-            .collect::<anyhow::Result<Flatten<Vec<Command>>>>()
+            .collect::<crate::Result<Flatten<Vec<Command>>>>()
             .map(|f| f.0)
     }
 
@@ -47,7 +47,7 @@ impl Engine {
         _command: Command,
         _scenario: &Scenario,
         _state: &mut State,
-    ) -> anyhow::Result<Value> {
+    ) -> crate::Result<Value> {
         Ok(Value::default())
     }
 }

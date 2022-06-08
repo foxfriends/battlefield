@@ -15,13 +15,14 @@ pub(crate) struct Module {
 }
 
 impl Module {
-    pub fn load(path: PathBuf) -> anyhow::Result<Self> {
+    pub fn load(path: PathBuf) -> crate::Result<Self> {
         // NOTE: these are all unwrapping because this method should only be called
         // after the caller has already validated the path. That may have to change
         // someday
         let mut segments = path.file_name().unwrap().to_str().unwrap().split('@');
         let name = segments.next().unwrap();
         let version = segments.next().unwrap();
+        // BUT: since it's all unwrapped, why is this a Result?
         Ok(Self {
             name: name.to_owned(),
             version: version.to_owned(),
@@ -38,7 +39,7 @@ impl Module {
         _command: Command,
         _scenario: &Scenario,
         _state: &mut State,
-    ) -> anyhow::Result<Value> {
+    ) -> crate::Result<Value> {
         Ok(Value::default())
     }
 }

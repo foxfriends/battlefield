@@ -19,7 +19,7 @@ impl Handler<Commit> for Game {
 
         let actions = match self.engine.commands(&self.scenario, &self.state) {
             Ok(actions) => actions,
-            Err(error) => return MessageResult(Err(error)),
+            Err(error) => return MessageResult(Err(error.into())),
         };
         for subscriber in &self.subscribers {
             if let Some(addr) = subscriber.upgrade() {

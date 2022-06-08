@@ -1,6 +1,6 @@
 use super::Engine;
 use crate::module::{Module, ModuleId};
-use crate::Scenario;
+use crate::{Error, ErrorKind, Scenario};
 use std::collections::{hash_map, HashMap};
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
@@ -61,7 +61,7 @@ impl Modules {
         }
     }
 
-    fn resolve_module(&mut self, name: &str, version: &str) -> anyhow::Result<&Module> {
+    fn resolve_module(&mut self, name: &str, version: &str) -> crate::Result<&Module> {
         let entry = self
             .modules
             .entry(ModuleId::new(name.to_owned(), version.to_owned()));
@@ -76,7 +76,7 @@ impl Modules {
     }
 }
 
-fn load_module(modules_path: &[PathBuf], id: &ModuleId) -> anyhow::Result<Module> {
+fn load_module(modules_path: &[PathBuf], id: &ModuleId) -> crate::Result<Module> {
     let module_path = modules_path
         .iter()
         .filter_map(|directory| std::fs::read_dir(directory).ok())
@@ -94,11 +94,13 @@ fn load_module(modules_path: &[PathBuf], id: &ModuleId) -> anyhow::Result<Module
             Some(entry.path())
         })
         .next()
-        .ok_or_else(|| anyhow::anyhow!("Module {id} not found"))?;
+        .ok_or_else(|| {
+            Error::internal(ErrorKind::ModuleNotFound, format!("Module {id} not found"))
+        })?;
     Module::load(module_path)
 }
 
-fn load_scenarios(scenarios_path: &[PathBuf]) -> Vec<anyhow::Result<Scenario>> {
+fn load_scenarios(scenarios_path: &[PathBuf]) -> Vec<crate::Result<Scenario>> {
     scenarios_path
         .iter()
         .filter_map(|directory| std::fs::read_dir(directory).ok())

@@ -12,7 +12,7 @@ impl Handler<GetState> for Game {
     fn handle(&mut self, GetState: GetState, _ctx: &mut Self::Context) -> Self::Result {
         match self.engine.commands(&self.scenario, &self.state) {
             Ok(actions) => MessageResult(Ok((self.state.clone(), actions))),
-            Err(error) => MessageResult(Err(error)),
+            Err(error) => MessageResult(Err(error.into())),
         }
     }
 }
