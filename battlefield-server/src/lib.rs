@@ -6,7 +6,8 @@ use std::sync::Arc;
 mod db;
 mod directory;
 mod game;
-mod socket;
+mod graphql;
+mod websocket;
 
 use db::PgPool;
 use directory::Directory;
@@ -35,8 +36,8 @@ impl BattlefieldServer {
         config
             .app_data(web::Data::new(self.directory.clone()))
             .app_data(web::Data::new(self.db.clone()))
-            .app_data(web::Data::new(self.engine.clone()))
-            .route("/ws/new/{scenario}", web::get().to(socket::create))
-            .route("/ws/{game_id}", web::get().to(socket::connect));
+            .app_data(web::Data::from(self.engine.clone()))
+            .configure(graphql::configure)
+            .configure(websocket::configure);
     }
 }

@@ -15,6 +15,8 @@ anyhow = "1.0.57"
 bytestring = "1.0.0"
 dotenv = "0.15.0"
 json-patch = "0.2.6"
+juniper = { git = "https://github.com/graphql-rust/juniper", rev = "4dd5150bcbb10a420e00d74fc67e550735bc68fc", features = ["uuid"] }
+juniper_actix = { git = "https://github.com/graphql-rust/juniper", rev = "4dd5150bcbb10a420e00d74fc67e550735bc68fc" }
 lazy_static = "1.4.0"
 log = "0.4.16"
 pretty_env_logger = "0.4.0"

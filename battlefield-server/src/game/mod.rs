@@ -1,5 +1,5 @@
 use crate::db::PgPool;
-use crate::socket::SocketHandler;
+use crate::websocket::SocketHandler;
 use actix::prelude::*;
 use actix::WeakAddr;
 use battlefield_core::{Engine, Scenario, State};

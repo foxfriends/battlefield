@@ -1,5 +1,5 @@
 use super::Game;
-use crate::socket::SocketHandler;
+use crate::websocket::SocketHandler;
 use actix::prelude::*;
 use actix::WeakAddr;
 

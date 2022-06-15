@@ -1,5 +1,5 @@
 use super::Game;
-use crate::socket::Notification;
+use crate::websocket::Notification;
 use actix::prelude::*;
 use battlefield_core::State;
 use json_patch::diff;
