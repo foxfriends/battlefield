@@ -1,6 +1,5 @@
-use super::Engine;
-use crate::module::{Module, ModuleId};
-use crate::{Error, ErrorKind, Scenario};
+use super::scenario::ScenarioError;
+use super::{Engine, Module, ModuleId, Scenario};
 use std::collections::{hash_map, HashMap};
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
@@ -29,20 +28,28 @@ impl EngineBuilder {
     pub fn build(self) -> Engine {
         let mut scenarios = load_scenarios(&self.scenarios_path);
         let mut modules = Modules::new(self.modules_path);
-        for scenario_result in &mut scenarios {
-            if let Ok(scenario) = scenario_result {
-                for (name, config) in &scenario.modules {
-                    if let Err(error) = modules.resolve_module(name, &config.version) {
-                        *scenario_result = Err(error);
-                        break;
-                    }
-                }
+        for scenario in &mut scenarios {
+            let errors: Vec<_> = scenario
+                .modules()
+                .filter_map(|module_config| modules.resolve_module(module_config.id()).err())
+                .collect();
+            log::warn!(
+                "Encountered {} errors loading scenario from {}",
+                errors.len(),
+                scenario.path().display(),
+            );
+            for error in errors {
+                log::debug!(
+                    "Error loading scenario from {}: {:?}",
+                    scenario.path().display(),
+                    error,
+                );
+                scenario.add_error(error);
             }
         }
 
         Engine {
-            // TODO: maybe keep those things around as Results so they can be reported as errors?
-            scenarios: scenarios.into_iter().filter_map(Result::ok).collect(),
+            scenarios,
             modules: modules.modules,
         }
     }
@@ -61,10 +68,8 @@ impl Modules {
         }
     }
 
-    fn resolve_module(&mut self, name: &str, version: &str) -> crate::Result<&Module> {
-        let entry = self
-            .modules
-            .entry(ModuleId::new(name.to_owned(), version.to_owned()));
+    fn resolve_module(&mut self, id: ModuleId) -> Result<&Module, ScenarioError> {
+        let entry = self.modules.entry(id);
 
         match entry {
             hash_map::Entry::Occupied(entry) => Ok(entry.into_mut()),
@@ -76,7 +81,7 @@ impl Modules {
     }
 }
 
-fn load_module(modules_path: &[PathBuf], id: &ModuleId) -> crate::Result<Module> {
+fn load_module(modules_path: &[PathBuf], id: &ModuleId) -> Result<Module, ScenarioError> {
     let module_path = modules_path
         .iter()
         .filter_map(|directory| std::fs::read_dir(directory).ok())
@@ -94,30 +99,32 @@ fn load_module(modules_path: &[PathBuf], id: &ModuleId) -> crate::Result<Module>
             Some(entry.path())
         })
         .next()
-        .ok_or_else(|| {
-            Error::internal(ErrorKind::ModuleNotFound, format!("Module {id} not found"))
-        })?;
-    Module::load(module_path)
+        .ok_or_else(|| ScenarioError::RequiredModuleNotFound(id.clone()))?;
+    match Module::load(module_path) {
+        Ok(module) => Ok(module),
+        Err(error) => Err(ScenarioError::FailedToLoadRequiredModule(
+            id.clone(),
+            Some(error),
+        )),
+    }
 }
 
-fn load_scenarios(scenarios_path: &[PathBuf]) -> Vec<crate::Result<Scenario>> {
+fn load_scenarios(scenarios_path: &[PathBuf]) -> Vec<Scenario> {
     scenarios_path
         .iter()
         .filter_map(|directory| std::fs::read_dir(directory).ok())
         .flatten()
-        .map(|entry| {
-            let entry = entry?;
-            let metadata = entry.metadata()?;
+        .filter_map(|entry| {
+            let entry = entry.ok()?;
+            let metadata = entry.metadata().ok()?;
             if !metadata.is_file() {
-                return Ok(None);
+                return None;
             }
             let path = entry.path();
             if path.extension().and_then(OsStr::to_str) != Some("toml") {
-                return Ok(None);
+                return None;
             }
-            let scenario_toml = std::fs::read_to_string(path)?;
-            Ok(toml::from_str(&scenario_toml)?)
+            Some(Scenario::from_file(path))
         })
-        .filter_map(Result::transpose)
         .collect()
 }
