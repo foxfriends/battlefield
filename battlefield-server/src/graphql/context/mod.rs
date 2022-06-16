@@ -1,10 +1,5 @@
-<<<<<<< Updated upstream
-use actix_web::web;
-use actix_web::dev::Payload;
-=======
 use actix_web::dev::Payload;
 use actix_web::web;
->>>>>>> Stashed changes
 use actix_web::FromRequest;
 use actix_web::HttpRequest;
 use battlefield_core::Engine;
@@ -15,6 +10,8 @@ use std::sync::Arc;
 pub struct Context {
     pub(super) engine: Arc<Engine>,
 }
+
+impl juniper::Context for Context {}
 
 impl FromRequest for Context {
     type Error = <web::Data<Engine> as FromRequest>::Error;

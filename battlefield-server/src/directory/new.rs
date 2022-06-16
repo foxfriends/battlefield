@@ -1,7 +1,7 @@
 use super::Directory;
 use crate::game::Game;
 use actix::prelude::*;
-use battlefield_core::Scenario;
+use battlefield_core::data::Scenario;
 use uuid::Uuid;
 
 #[derive(Message)]

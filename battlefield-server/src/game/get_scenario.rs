@@ -1,6 +1,6 @@
 use super::Game;
 use actix::prelude::*;
-use battlefield_core::Scenario;
+use battlefield_core::data::Scenario;
 
 #[derive(Message)]
 #[rtype(result = "Scenario")]

@@ -2,7 +2,7 @@ use crate::db::PgPool;
 use crate::websocket::SocketHandler;
 use actix::prelude::*;
 use actix::WeakAddr;
-use battlefield_core::{Engine, Scenario, State};
+use battlefield_core::{data::Scenario, Engine, State};
 use std::sync::Arc;
 use uuid::Uuid;
 

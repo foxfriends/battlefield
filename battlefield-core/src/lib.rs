@@ -1,13 +1,12 @@
 mod util;
 
 mod command;
-mod data;
+pub mod data;
 mod engine;
 mod error;
 mod state;
 
 pub use command::Command;
-pub use data::Scenario;
-pub use engine::{Engine, EngineBuilder};
+pub use engine::{Engine, EngineBuilder, Scenario, ScenarioError};
 pub use error::{Error, ErrorKind, Result};
 pub use state::State;

@@ -20,9 +20,12 @@ pub async fn create(
     engine: web::Data<Arc<Engine>>,
     directory: web::Data<Addr<Directory>>,
 ) -> Result<HttpResponse, Error> {
-    let scenario = engine.scenario(&path.scenario).ok_or_else(move || {
-        error::ErrorNotFound(format!("Scenario {} not found", path.scenario))
-    })?;
+    let scenario = engine
+        .scenario(&path.scenario)
+        .and_then(|scenario| scenario.data())
+        .ok_or_else(move || {
+            error::ErrorNotFound(format!("Scenario {} not found", path.scenario))
+        })?;
     let (game_id, game) = directory
         .send(New(scenario.clone()))
         .await

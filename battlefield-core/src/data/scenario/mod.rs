@@ -19,3 +19,13 @@ pub struct Scenario {
     #[serde(deserialize_with = "module_map")]
     pub(crate) modules: HashMap<String, ModuleConfig>,
 }
+
+impl Scenario {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn description(&self) -> &str {
+        &self.description
+    }
+}

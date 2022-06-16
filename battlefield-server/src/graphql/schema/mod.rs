@@ -1,6 +1,7 @@
 use super::Context;
 use juniper::{EmptyMutation, EmptySubscription, RootNode};
 
+mod connection;
 mod query;
 
 use query::Query;

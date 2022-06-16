@@ -9,7 +9,7 @@ mod scenario;
 
 pub use builder::EngineBuilder;
 pub(crate) use module::{Module, ModuleId};
-pub(crate) use scenario::Scenario;
+pub use scenario::{Scenario, ScenarioError};
 
 #[derive(Default)]
 pub struct Engine {
@@ -24,11 +24,16 @@ impl Engine {
         })
     }
 
-    pub fn scenario(&self, name: &str) -> Option<&data::Scenario> {
+    pub fn scenario(&self, name: &str) -> Option<&Scenario> {
         self.scenarios
             .iter()
-            .filter_map(|scenario| scenario.data())
-            .find(|scenario| scenario.name == name)
+            .find(|scenario| scenario.name() == name)
+    }
+
+    pub fn scenarios(
+        &self,
+    ) -> impl Iterator<Item = &Scenario> + DoubleEndedIterator + ExactSizeIterator {
+        self.scenarios.iter()
     }
 
     pub fn commands(
@@ -39,10 +44,10 @@ impl Engine {
         let scenario = self
             .scenarios
             .iter()
-            .find(|s| s.is(scenario))
+            .find(|s| s.name() == scenario.name)
             .ok_or_else(|| {
-                crate::Error::internal(
-                    crate::ErrorKind::ScenarioNotFound,
+                Error::internal(
+                    ErrorKind::ScenarioNotFound,
                     format!("Scenario {} not found", scenario.name),
                 )
             })?;

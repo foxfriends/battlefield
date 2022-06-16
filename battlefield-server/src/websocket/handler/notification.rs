@@ -1,6 +1,6 @@
 use super::SocketHandler;
 use actix::prelude::*;
-use battlefield_core::{Command, Scenario, State};
+use battlefield_core::{data::Scenario, Command, State};
 use json_patch::Patch;
 use serde::Serialize;
 use uuid::Uuid;
