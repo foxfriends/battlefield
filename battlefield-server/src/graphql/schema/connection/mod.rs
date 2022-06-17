@@ -3,7 +3,7 @@ mod cursor;
 mod edge;
 mod page_info;
 
-pub(crate) use connection_result::connection_result;
+pub(crate) use connection_result::connection;
 pub(crate) use edge::connection_edge;
 
 pub use connection_result::ConnectionResult;

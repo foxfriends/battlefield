@@ -1,11 +1,8 @@
 use super::connection::{ConnectionResult, Connector, Cursor};
 use super::Context;
 
-mod scenarios_connection;
-use scenarios_connection::ScenariosConnector;
-
 mod scenario;
-use scenario::Scenario;
+use scenario::ScenariosConnector;
 
 pub struct Query;
 

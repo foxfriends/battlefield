@@ -1,9 +1,8 @@
-use super::super::super::Context;
-use super::super::connection::{
-    connection_edge, connection_result, Connection, ConnectionNode, Connector, Cursor, Edge,
-    PageInfo,
+use super::{Scenario, ScenariosConnection};
+use crate::graphql::schema::connection::{
+    connection, ConnectionNode, Connector, Cursor, Edge, PageInfo,
 };
-use super::Scenario;
+use crate::graphql::schema::Context;
 
 pub struct ScenariosConnector<'a> {
     context: &'a Context,
@@ -153,28 +152,4 @@ impl<'a> Connector for ScenariosConnector<'a> {
     }
 }
 
-pub struct ScenariosConnection<'a> {
-    edges: Vec<Edge<Scenario<'a>>>,
-    page_info: PageInfo,
-}
-
-impl<'a> Connection for ScenariosConnection<'a> {
-    type Node = Scenario<'a>;
-
-    fn edges(&self) -> &[Edge<Self::Node>] {
-        &self.edges
-    }
-
-    fn page_info(&self) -> PageInfo {
-        self.page_info.clone()
-    }
-}
-
-impl ConnectionNode for Scenario<'_> {
-    fn cursor(&self) -> Cursor {
-        Cursor::Node(self.0.name().to_owned())
-    }
-}
-
-connection_result!(impl<'a> for ScenariosConnector<'a> as "ScenariosConnection");
-connection_edge!(impl<'a> for Scenario<'a> as "ScenarioEdge");
+connection!(impl<'a> for ScenariosConnector<'a> as "ScenariosConnection");
