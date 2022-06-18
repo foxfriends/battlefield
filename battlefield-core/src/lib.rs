@@ -7,6 +7,6 @@ mod error;
 mod state;
 
 pub use command::Command;
-pub use engine::{Engine, EngineBuilder, Scenario, ScenarioError};
+pub use engine::{Engine, EngineBuilder, Module, Scenario, ScenarioError};
 pub use error::{Error, ErrorKind, Result};
 pub use state::State;

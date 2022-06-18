@@ -8,7 +8,7 @@ mod module;
 mod scenario;
 
 pub use builder::EngineBuilder;
-pub(crate) use module::{Module, ModuleId};
+pub use module::{Module, ModuleId};
 pub use scenario::{Scenario, ScenarioError};
 
 #[derive(Default)]
@@ -34,6 +34,10 @@ impl Engine {
         &self,
     ) -> impl Iterator<Item = &Scenario> + DoubleEndedIterator + ExactSizeIterator {
         self.scenarios.iter()
+    }
+
+    pub fn modules(&self) -> impl Iterator<Item = &Module> + ExactSizeIterator {
+        self.modules.values()
     }
 
     pub fn commands(

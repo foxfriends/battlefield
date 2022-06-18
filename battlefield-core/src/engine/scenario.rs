@@ -6,7 +6,6 @@ use std::path::{Path, PathBuf};
 pub enum ScenarioError {
     FailedToLoad(crate::Error),
     RequiredModuleNotFound(ModuleId),
-    FailedToLoadRequiredModule(ModuleId, Option<crate::Error>),
 }
 
 pub struct Scenario {

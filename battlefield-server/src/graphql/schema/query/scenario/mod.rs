@@ -1,7 +1,4 @@
-use crate::graphql::schema::connection::connection_edge;
-
-mod scenarios_connection;
-pub use scenarios_connection::ScenariosConnection;
+use crate::graphql::schema::connection::{connection_edge, ConnectionNode, Cursor};
 
 mod scenarios_connector;
 pub use scenarios_connector::ScenariosConnector;
@@ -24,6 +21,12 @@ impl Scenario<'_> {
 
     fn description(&self) -> Option<&str> {
         self.0.data().map(|data| data.description())
+    }
+}
+
+impl ConnectionNode for Scenario<'_> {
+    fn cursor(&self) -> Cursor {
+        Cursor::Node(self.0.name().to_owned())
     }
 }
 

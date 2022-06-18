@@ -1,6 +1,7 @@
-use super::scenario::ScenarioError;
+use crate::ScenarioError;
+
 use super::{Engine, Module, ModuleId, Scenario};
-use std::collections::{hash_map, HashMap};
+use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
@@ -27,86 +28,45 @@ impl EngineBuilder {
 
     pub fn build(self) -> Engine {
         let mut scenarios = load_scenarios(&self.scenarios_path);
-        let mut modules = Modules::new(self.modules_path);
+        let modules = load_modules(&self.modules_path);
         for scenario in &mut scenarios {
-            let errors: Vec<_> = scenario
+            let missing_modules: Vec<_> = scenario
                 .modules()
-                .filter_map(|module_config| modules.resolve_module(module_config.id()).err())
+                .filter(|module_config| !modules.contains_key(&module_config.id()))
+                .map(|module_config| module_config.id())
                 .collect();
             log::warn!(
-                "Encountered {} errors loading scenario from {}",
-                errors.len(),
+                "Missing {} required modules for scenario {} ({})",
+                missing_modules.len(),
+                scenario.name(),
                 scenario.path().display(),
             );
-            for error in errors {
-                log::debug!(
-                    "Error loading scenario from {}: {:?}",
-                    scenario.path().display(),
-                    error,
-                );
-                scenario.add_error(error);
+            for missing_module in missing_modules {
+                scenario.add_error(ScenarioError::RequiredModuleNotFound(missing_module));
             }
         }
 
-        Engine {
-            scenarios,
-            modules: modules.modules,
-        }
+        Engine { scenarios, modules }
     }
 }
 
-struct Modules {
-    modules_path: Vec<PathBuf>,
-    modules: HashMap<ModuleId, Module>,
-}
-
-impl Modules {
-    fn new(modules_path: Vec<PathBuf>) -> Self {
-        Self {
-            modules_path,
-            modules: HashMap::default(),
-        }
-    }
-
-    fn resolve_module(&mut self, id: ModuleId) -> Result<&Module, ScenarioError> {
-        let entry = self.modules.entry(id);
-
-        match entry {
-            hash_map::Entry::Occupied(entry) => Ok(entry.into_mut()),
-            hash_map::Entry::Vacant(entry) => {
-                let module = load_module(&self.modules_path, entry.key())?;
-                Ok(entry.insert(module))
-            }
-        }
-    }
-}
-
-fn load_module(modules_path: &[PathBuf], id: &ModuleId) -> Result<Module, ScenarioError> {
-    let module_path = modules_path
+fn load_modules(modules_path: &[PathBuf]) -> HashMap<ModuleId, Module> {
+    modules_path
         .iter()
         .filter_map(|directory| std::fs::read_dir(directory).ok())
         .flatten()
-        .filter_map(Result::ok)
         .filter_map(|entry| {
+            let entry = entry.ok()?;
             let metadata = entry.metadata().ok()?;
             if !metadata.is_dir() {
                 return None;
             }
             let name = entry.file_name().into_string().ok()?;
-            if name.parse::<ModuleId>().ok()? != *id {
-                return None;
-            }
-            Some(entry.path())
+            let id = name.parse::<ModuleId>().ok()?;
+            let module = Module::load(entry.path()).ok()?; // TODO: keep this error around too?
+            Some((id, module))
         })
-        .next()
-        .ok_or_else(|| ScenarioError::RequiredModuleNotFound(id.clone()))?;
-    match Module::load(module_path) {
-        Ok(module) => Ok(module),
-        Err(error) => Err(ScenarioError::FailedToLoadRequiredModule(
-            id.clone(),
-            Some(error),
-        )),
-    }
+        .collect()
 }
 
 fn load_scenarios(scenarios_path: &[PathBuf]) -> Vec<Scenario> {

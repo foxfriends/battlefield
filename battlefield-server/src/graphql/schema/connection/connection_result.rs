@@ -1,12 +1,12 @@
-use super::Connector;
+use super::{Connection, Connector};
 
 pub struct ConnectionResult<T: Connector> {
     pub(crate) connector: T,
-    pub(crate) connection: T::Connection,
+    pub(crate) connection: Connection<T::Node>,
 }
 
 impl<T: Connector> ConnectionResult<T> {
-    pub fn new(connector: T, connection: T::Connection) -> Self {
+    pub fn new(connector: T, connection: Connection<T::Node>) -> Self {
         Self {
             connector,
             connection,
@@ -19,17 +19,14 @@ macro_rules! connection {
         #[juniper::graphql_object(name = $n)]
         impl$(<$($lt),+>)? $crate::graphql::schema::connection::ConnectionResult<$t> {
             pub fn total_count(&self) -> i32 {
-                use $crate::graphql::schema::connection::Connector;
                 self.connector.len() as i32
             }
 
-            pub fn edges(&self) -> &[$crate::graphql::schema::connection::Edge<<<$t as $crate::graphql::schema::connection::Connector>::Connection as $crate::graphql::schema::connection::Connection>::Node>] {
-                use $crate::graphql::schema::connection::Connection;
+            pub fn edges(&self) -> &[$crate::graphql::schema::connection::Edge<<$t as $crate::graphql::schema::connection::Connector>::Node>] {
                 self.connection.edges()
             }
 
-            pub fn page_info(&self) -> PageInfo {
-                use $crate::graphql::schema::connection::Connection;
+            pub fn page_info(&self) -> &$crate::graphql::schema::connection::PageInfo {
                 self.connection.page_info()
             }
         }
