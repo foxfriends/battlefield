@@ -33,6 +33,7 @@ impl Module {
         vec![]
     }
 
+    #[allow(dead_code)]
     pub(crate) fn perform(
         &self,
         _command: Command,
