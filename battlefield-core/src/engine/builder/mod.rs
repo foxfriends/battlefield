@@ -1,9 +1,10 @@
-use crate::ScenarioError;
-
 use super::{Engine, Module, ModuleId, Scenario};
+use crate::data::ModuleManifest;
+use crate::ScenarioError;
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
+use topological_sort::TopologicalSort;
 
 #[derive(Default)]
 pub struct EngineBuilder {
@@ -51,7 +52,8 @@ impl EngineBuilder {
 }
 
 fn load_modules(modules_path: &[PathBuf]) -> HashMap<ModuleId, Module> {
-    modules_path
+    // load each module's manifest
+    let manifests: HashMap<_, _> = modules_path
         .iter()
         .filter_map(|directory| std::fs::read_dir(directory).ok())
         .flatten()
@@ -63,10 +65,44 @@ fn load_modules(modules_path: &[PathBuf]) -> HashMap<ModuleId, Module> {
             }
             let name = entry.file_name().into_string().ok()?;
             let id = name.parse::<ModuleId>().ok()?;
-            let module = Module::load(entry.path()).ok()?; // TODO: keep this error around too?
-            Some((id, module))
+            // Errors above aren't really errors, just files that don't qualify as modules.
+            // Errors below are errors with loading what should be a module.
+            let path = entry.path();
+            let manifest = std::fs::read_to_string(path.join("module.toml"))
+                .map_err(Into::into)
+                .and_then(|src| toml::from_str(&src).map_err(Into::into));
+            Some((id, (path, manifest)))
+        })
+        .collect();
+    // compute dependency order
+    let mut ts = TopologicalSort::<ModuleId>::new();
+    for (id, (_, manifest)) in &manifests {
+        ts.insert(id.clone());
+        for dep in manifest
+            .iter()
+            .flat_map(ModuleManifest::dependencies)
+            .map(|(_, config)| config.id())
+        {
+            ts.add_dependency(id.clone(), dep);
+        }
+    }
+    // load all modules for real
+    let mut modules = HashMap::with_capacity(manifests.len());
+    for module in ts.into_iter() {
+    }
+
+    let modules = ts
+        .map(|id| {
+            let (path, manifest) = manifests.remove(&id).unwrap();
+            (id.clone(), Module::load(path, manifest))
         })
         .collect()
+
+    if ts.len() != 0 {
+        // Circular dependency?
+    }
+
+    todo!()
 }
 
 fn load_scenarios(scenarios_path: &[PathBuf]) -> Vec<Scenario> {

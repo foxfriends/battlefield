@@ -1,17 +1,8 @@
+use super::{module_map, Map, ModuleConfig};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-mod location;
-mod map;
-mod module_config;
-mod tile;
-
-pub use location::*;
-pub use map::*;
-pub use module_config::*;
-pub use tile::*;
-
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Scenario {
     pub(crate) name: String,
     pub(crate) description: String,
@@ -27,5 +18,11 @@ impl Scenario {
 
     pub fn description(&self) -> &str {
         &self.description
+    }
+
+    pub fn modules(&self) -> impl Iterator<Item = (&str, &ModuleConfig)> {
+        self.modules
+            .iter()
+            .map(|(name, config)| (name.as_str(), config))
     }
 }

@@ -1,4 +1,3 @@
-use crate::util::flatten::Flatten;
 use crate::{data, Command, Error, ErrorKind, State};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -45,24 +44,28 @@ impl Engine {
         scenario: &data::Scenario,
         state: &State,
     ) -> crate::Result<Vec<Command>> {
-        let scenario = self
-            .scenarios
-            .iter()
-            .find(|s| s.name() == scenario.name)
-            .ok_or_else(|| {
-                Error::internal(
-                    ErrorKind::ScenarioNotFound,
-                    format!("Scenario {} not found", scenario.name),
-                )
-            })?;
-        scenario
-            .modules()
-            .map(|module_config| {
-                let module = self.require_module(module_config.id())?;
-                Ok(module.commands(scenario, state))
-            })
-            .collect::<crate::Result<Flatten<Vec<Command>>>>()
-            .map(|f| f.0)
+        let mut scope = rhai::Scope::new();
+        scope.push("commands", Vec::<Command>::new());
+        scope.push_constant("scenario", scenario.clone());
+        scope.push_constant("state", state.clone());
+
+        let mut engine = rhai::Engine::new();
+        for (name, config) in scenario.modules() {
+            let module = self.require_module(config.id())?;
+            let rhai_module = rhai::Module::eval_ast_as_new(
+                rhai::Scope::default(),
+                &module.ast().unwrap(),
+                &engine,
+            )?;
+            engine.register_static_module(
+                format!("battlefield::{name}"),
+                rhai::Shared::new(rhai_module),
+            );
+        }
+        for (name, _) in scenario.modules() {
+            engine.run_with_scope(&mut scope, &format!("battlefield::{name}::commands();"))?;
+        }
+        Ok(scope.get_value("commands").unwrap())
     }
 
     pub fn perform(
