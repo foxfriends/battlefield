@@ -104,14 +104,6 @@ impl Module {
         self.ast.clone()
     }
 
-    pub(crate) fn commands(
-        &self,
-        scenario: &Scenario,
-        state: &State,
-    ) -> crate::Result<Vec<Command>> {
-        Ok(vec![])
-    }
-
     #[allow(dead_code)]
     pub(crate) fn perform(
         &self,

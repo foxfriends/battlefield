@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use super::handler::SocketHandler;
 use crate::directory::{Directory, New};
 use actix::prelude::*;
@@ -17,7 +15,7 @@ pub async fn create(
     req: HttpRequest,
     stream: web::Payload,
     path: web::Path<Params>,
-    engine: web::Data<Arc<Engine>>,
+    engine: web::Data<Engine>,
     directory: web::Data<Addr<Directory>>,
 ) -> Result<HttpResponse, Error> {
     let scenario = engine
