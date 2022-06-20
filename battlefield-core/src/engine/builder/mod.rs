@@ -79,7 +79,7 @@ fn load_modules(modules_path: &[PathBuf]) -> HashMap<ModuleId, Module> {
     // end and they will encounter errors.
     let edges: Vec<(ModuleId, ModuleId)> = manifests
         .iter()
-        .flat_map(|(id, (path, manifest))| {
+        .flat_map(|(id, (_, manifest))| {
             manifest
                 .iter()
                 .flat_map(ModuleManifest::dependencies)

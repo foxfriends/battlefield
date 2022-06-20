@@ -65,29 +65,30 @@ impl Module {
         }
         engine.set_module_resolver(FileModuleResolver::new_with_path(&path));
 
-        let ast = if errors.is_empty() {
-            let ast = read_to_string(path.join(&manifest.entrypoint))
-                .map_err(Into::into)
-                .and_then(|src| {
-                    engine
-                        .compile_into_self_contained(&rhai::Scope::default(), &src)
-                        .map_err(Into::into)
-                })
-                .and_then(|ast| {
-                    rhai::Module::eval_ast_as_new(rhai::Scope::default(), &ast, &engine)
-                        .map_err(Into::into)
-                })
-                .map(rhai::Shared::new);
-            match ast {
-                Ok(ast) => Some(ast),
-                Err(error) => {
-                    errors.push(ModuleError::SourceError(error));
-                    None
+        let ast = errors
+            .is_empty()
+            .then(|| {
+                let ast = read_to_string(path.join(&manifest.entrypoint))
+                    .map_err(Into::into)
+                    .and_then(|src| {
+                        engine
+                            .compile_into_self_contained(&rhai::Scope::default(), &src)
+                            .map_err(Into::into)
+                    })
+                    .and_then(|ast| {
+                        rhai::Module::eval_ast_as_new(rhai::Scope::default(), &ast, &engine)
+                            .map_err(Into::into)
+                    })
+                    .map(rhai::Shared::new);
+                match ast {
+                    Ok(ast) => Some(ast),
+                    Err(error) => {
+                        errors.push(ModuleError::SourceError(error));
+                        None
+                    }
                 }
-            }
-        } else {
-            None
-        };
+            })
+            .flatten();
 
         Self {
             name: name.to_owned(),
