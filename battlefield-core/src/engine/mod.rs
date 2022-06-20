@@ -52,15 +52,7 @@ impl Engine {
         let mut engine = rhai::Engine::new();
         for (name, config) in scenario.modules() {
             let module = self.require_module(config.id())?;
-            let rhai_module = rhai::Module::eval_ast_as_new(
-                rhai::Scope::default(),
-                &module.ast().unwrap(),
-                &engine,
-            )?;
-            engine.register_static_module(
-                format!("battlefield::{name}"),
-                rhai::Shared::new(rhai_module),
-            );
+            engine.register_static_module(format!("battlefield::{name}"), module.ast().unwrap());
         }
         for (name, _) in scenario.modules() {
             engine.run_with_scope(&mut scope, &format!("battlefield::{name}::commands();"))?;
