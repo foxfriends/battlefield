@@ -1,4 +1,4 @@
-use crate::engine::ModuleId;
+use super::ModuleId;
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;

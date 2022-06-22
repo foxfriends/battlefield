@@ -1,20 +1,15 @@
 use super::Scenario;
-use crate::{data::ModuleManifest, Command, State};
+use crate::data::{ModuleConfig, ModuleId, ModuleManifest};
+use crate::{Command, State};
 use rhai::module_resolvers::FileModuleResolver;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::fs::read_to_string;
 use std::path::{Path, PathBuf};
 
-mod module_id;
+mod module_error;
 
-pub use module_id::ModuleId;
-
-pub enum ModuleError {
-    ManifestError(crate::Error),
-    SourceError(crate::Error),
-    UnresolvedDependency(ModuleId),
-}
+pub use module_error::ModuleError;
 
 pub struct Module {
     name: String,
@@ -114,6 +109,13 @@ impl Module {
         Ok(Value::default())
     }
 
+    pub fn dependencies(&self) -> impl Iterator<Item = &ModuleConfig> {
+        self.manifest
+            .iter()
+            .flat_map(ModuleManifest::dependencies)
+            .map(|(_, config)| config)
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -128,5 +130,9 @@ impl Module {
 
     pub fn id(&self) -> ModuleId {
         ModuleId::new(self.name.clone(), self.version.clone())
+    }
+
+    pub fn errors(&self) -> impl Iterator<Item = &ModuleError> {
+        self.errors.iter()
     }
 }

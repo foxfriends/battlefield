@@ -1,4 +1,5 @@
-use crate::{data, Command, Error, ErrorKind, State};
+use crate::data::{self, ModuleId};
+use crate::{Command, Error, ErrorKind, State};
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -7,7 +8,7 @@ mod module;
 mod scenario;
 
 pub use builder::EngineBuilder;
-pub use module::{Module, ModuleId};
+pub use module::Module;
 pub use scenario::{Scenario, ScenarioError};
 
 #[derive(Default)]

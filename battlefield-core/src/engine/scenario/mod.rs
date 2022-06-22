@@ -1,12 +1,9 @@
-use super::module::ModuleId;
 use crate::data;
+use crate::data::ModuleId;
 use std::path::{Path, PathBuf};
 
-#[derive(Debug)]
-pub enum ScenarioError {
-    FailedToLoad(crate::Error),
-    RequiredModuleNotFound(ModuleId),
-}
+mod scenario_error;
+pub use scenario_error::ScenarioError;
 
 pub struct Scenario {
     path: PathBuf,
@@ -48,10 +45,6 @@ impl Scenario {
             .unwrap_or_else(|| self.path.to_str().unwrap())
     }
 
-    pub fn errors(&self) -> &[ScenarioError] {
-        &self.errors
-    }
-
     pub fn path(&self) -> &Path {
         self.path.as_ref()
     }
@@ -60,5 +53,9 @@ impl Scenario {
         self.data
             .iter()
             .flat_map(|scenario| scenario.modules.values())
+    }
+
+    pub fn errors(&self) -> impl Iterator<Item = &ScenarioError> {
+        self.errors.iter()
     }
 }
