@@ -1,6 +1,7 @@
 use super::{Engine, Module, ModuleId, Scenario};
 use crate::data::ModuleManifest;
 use crate::ScenarioError;
+use log::Level;
 use std::collections::{HashMap, HashSet};
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
@@ -27,33 +28,8 @@ impl EngineBuilder {
     }
 
     pub fn build(self) -> Engine {
-        let mut scenarios = load_scenarios(&self.scenarios_path);
         let modules = load_modules(&self.modules_path);
-        for scenario in &mut scenarios {
-            let found_modules: HashSet<_> = scenario
-                .modules()
-                .filter_map(|module_config| modules.get(&module_config.id()))
-                .filter(|module| module.is_valid())
-                .map(|module| module.id())
-                .collect();
-            let missing_modules: Vec<_> = scenario
-                .modules()
-                .map(|module| module.id())
-                .filter(|id| !found_modules.contains(id))
-                .collect();
-            if !missing_modules.is_empty() {
-                log::warn!(
-                    "Missing {} required modules for scenario {} ({})",
-                    missing_modules.len(),
-                    scenario.name(),
-                    scenario.path().display(),
-                );
-                for missing_module in missing_modules {
-                    scenario.add_error(ScenarioError::RequiredModuleNotFound(missing_module));
-                }
-            }
-        }
-
+        let scenarios = load_scenarios(&self.scenarios_path, &modules);
         Engine { scenarios, modules }
     }
 }
@@ -136,9 +112,15 @@ fn load_modules(modules_path: &[PathBuf]) -> HashMap<ModuleId, Module> {
         }
     }
 
-    log::debug!("Dependency graph: {:?}", sorted);
+    log::debug!(
+        "Dependency graph: {:?}",
+        sorted
+            .iter()
+            .map(|id| id.to_string())
+            .collect::<Vec<_>>()
+            .join(" -> ")
+    );
     for (id, _) in incoming.into_iter() {
-        log::warn!("Dependencies of module {id} cause a cycle");
         sorted.push(id);
     }
 
@@ -149,22 +131,37 @@ fn load_modules(modules_path: &[PathBuf]) -> HashMap<ModuleId, Module> {
         // The dependent module will detect it is missing and report the error.
         if let Some((path, manifest)) = manifests.remove(&id) {
             let module = Module::load(path, manifest, &modules);
-            if !module.is_valid() {
+            if log::log_enabled!(Level::Warn) && !module.is_valid() {
                 log::warn!(
-                    "Module {} encountered {} errors while loading",
+                    "Module {} failed to load with {} errors.",
                     module.id(),
                     module.errors().len()
                 );
+                if log::log_enabled!(Level::Debug) {
+                    for error in module.errors().iter() {
+                        log::debug!("{}", error)
+                    }
+                }
             }
             modules.insert(id, module);
         }
     }
 
+    if log::log_enabled!(Level::Info) {
+        log::info!(
+            "{} installed modules loaded successfully.",
+            modules.values().filter(|module| module.is_valid()).count()
+        );
+    }
+
     modules
 }
 
-fn load_scenarios(scenarios_path: &[PathBuf]) -> Vec<Scenario> {
-    scenarios_path
+fn load_scenarios(
+    scenarios_path: &[PathBuf],
+    modules: &HashMap<ModuleId, Module>,
+) -> Vec<Scenario> {
+    let mut scenarios: Vec<_> = scenarios_path
         .iter()
         .filter_map(|directory| std::fs::read_dir(directory).ok())
         .flatten()
@@ -180,5 +177,43 @@ fn load_scenarios(scenarios_path: &[PathBuf]) -> Vec<Scenario> {
             }
             Some(Scenario::from_file(path))
         })
-        .collect()
+        .collect();
+
+    log::info!("{} installed scenarios detected.", scenarios.len());
+    for scenario in &mut scenarios {
+        let found_modules: HashSet<_> = scenario
+            .modules()
+            .filter_map(|module_config| modules.get(&module_config.id()))
+            .filter(|module| module.is_valid())
+            .map(|module| module.id())
+            .collect();
+        let missing_modules: Vec<_> = scenario
+            .modules()
+            .map(|module| module.id())
+            .filter(|id| !found_modules.contains(id))
+            .collect();
+        if !missing_modules.is_empty() {
+            log::warn!(
+                "Missing {} required modules for scenario {} ({})",
+                missing_modules.len(),
+                scenario.name(),
+                scenario.path().display(),
+            );
+            for missing_module in missing_modules {
+                scenario.add_error(ScenarioError::RequiredModuleNotFound(missing_module));
+            }
+        }
+    }
+
+    if log::log_enabled!(Level::Debug) {
+        log::info!(
+            "{} installed scenarios loaded successfully.",
+            scenarios
+                .iter()
+                .filter(|scenario| scenario.is_valid())
+                .count()
+        );
+    }
+
+    scenarios
 }
