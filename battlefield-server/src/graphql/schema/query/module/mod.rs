@@ -22,6 +22,21 @@ impl Module<'_> {
     fn version(&self) -> &str {
         self.0.version()
     }
+
+    fn dependencies(&self) -> Vec<String> {
+        self.0
+            .dependencies()
+            .map(|module| module.id().to_string())
+            .collect()
+    }
+
+    fn is_valid(&self) -> bool {
+        self.0.is_valid()
+    }
+
+    fn errors(&self) -> Vec<String> {
+        self.0.errors().iter().map(ToString::to_string).collect()
+    }
 }
 
 impl ConnectionNode for Module<'_> {

@@ -10,3 +10,4 @@ macro_rules! error_from {
 
 error_from!(toml::de::Error);
 error_from!(std::io::Error);
+error_from!(Box<rhai::EvalAltResult>);

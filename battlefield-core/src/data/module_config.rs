@@ -1,9 +1,9 @@
-use crate::engine::ModuleId;
+use super::ModuleId;
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, Debug)]
 pub struct ModuleConfig {
     pub(crate) name: String,
     pub(crate) version: String,

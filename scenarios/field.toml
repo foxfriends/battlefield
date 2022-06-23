@@ -20,4 +20,4 @@ name = "Plains"
 description = "Open grassy plains. Does not provide much cover."
 
 [modules]
-core = "1"
+core = "0.0.1"

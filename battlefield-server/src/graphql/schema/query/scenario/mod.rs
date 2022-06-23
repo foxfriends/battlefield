@@ -22,6 +22,10 @@ impl Scenario<'_> {
     fn description(&self) -> Option<&str> {
         self.0.data().map(|data| data.description())
     }
+
+    fn errors(&self) -> Vec<String> {
+        self.0.errors().iter().map(ToString::to_string).collect()
+    }
 }
 
 impl ConnectionNode for Scenario<'_> {
