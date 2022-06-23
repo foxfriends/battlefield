@@ -55,7 +55,7 @@ impl Scenario {
             .flat_map(|scenario| scenario.modules.values())
     }
 
-    pub fn errors(&self) -> impl Iterator<Item = &ScenarioError> {
-        self.errors.iter()
+    pub fn errors(&self) -> &[ScenarioError] {
+        &self.errors
     }
 }

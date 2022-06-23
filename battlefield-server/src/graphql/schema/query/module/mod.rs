@@ -30,8 +30,12 @@ impl Module<'_> {
             .collect()
     }
 
+    fn is_valid(&self) -> bool {
+        self.0.is_valid()
+    }
+
     fn errors(&self) -> Vec<String> {
-        self.0.errors().map(ToString::to_string).collect()
+        self.0.errors().iter().map(ToString::to_string).collect()
     }
 }
 

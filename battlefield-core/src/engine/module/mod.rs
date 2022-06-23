@@ -49,6 +49,7 @@ impl Module {
 
         let mut errors = vec![];
         let mut engine = rhai::Engine::new();
+        engine.register_global_module(crate::runtime::MODULE.clone());
         for (name, config) in manifest.dependencies() {
             let id = config.id();
             match modules.get(&id).and_then(|module| module.ast()) {
@@ -63,7 +64,7 @@ impl Module {
         let ast = errors
             .is_empty()
             .then(|| {
-                let ast = read_to_string(path.join(&manifest.entrypoint))
+                let ast = read_to_string(path.join(manifest.entrypoint()))
                     .map_err(Into::into)
                     .and_then(|src| {
                         engine
@@ -132,7 +133,11 @@ impl Module {
         ModuleId::new(self.name.clone(), self.version.clone())
     }
 
-    pub fn errors(&self) -> impl Iterator<Item = &ModuleError> {
-        self.errors.iter()
+    pub fn is_valid(&self) -> bool {
+        self.manifest.is_some() && self.ast.is_some() && self.errors.is_empty()
+    }
+
+    pub fn errors(&self) -> &[ModuleError] {
+        &self.errors
     }
 }

@@ -24,7 +24,7 @@ impl Scenario<'_> {
     }
 
     fn errors(&self) -> Vec<String> {
-        self.0.errors().map(ToString::to_string).collect()
+        self.0.errors().iter().map(ToString::to_string).collect()
     }
 }
 

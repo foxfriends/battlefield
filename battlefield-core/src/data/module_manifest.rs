@@ -10,16 +10,31 @@ fn default_entrypoint() -> PathBuf {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ModuleManifest {
+pub struct ModuleMetadata {
+    pub(crate) name: String,
+    pub(crate) version: String,
     #[serde(default = "default_entrypoint")]
     pub(crate) entrypoint: PathBuf,
-    #[serde(deserialize_with = "module_map")]
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ModuleManifest {
+    pub(crate) module: ModuleMetadata,
+    #[serde(deserialize_with = "module_map", default)]
     pub(crate) dependencies: HashMap<String, ModuleConfig>,
 }
 
 impl ModuleManifest {
     pub fn entrypoint(&self) -> &Path {
-        &self.entrypoint
+        &self.module.entrypoint
+    }
+
+    pub fn name(&self) -> &str {
+        &self.module.name
+    }
+
+    pub fn version(&self) -> &str {
+        &self.module.version
     }
 
     pub fn dependencies(&self) -> impl Iterator<Item = (&str, &ModuleConfig)> {

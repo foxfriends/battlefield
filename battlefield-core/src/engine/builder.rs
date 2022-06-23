@@ -30,19 +30,27 @@ impl EngineBuilder {
         let mut scenarios = load_scenarios(&self.scenarios_path);
         let modules = load_modules(&self.modules_path);
         for scenario in &mut scenarios {
+            let found_modules: HashSet<_> = scenario
+                .modules()
+                .filter_map(|module_config| modules.get(&module_config.id()))
+                .filter(|module| module.is_valid())
+                .map(|module| module.id())
+                .collect();
             let missing_modules: Vec<_> = scenario
                 .modules()
-                .filter(|module_config| !modules.contains_key(&module_config.id()))
-                .map(|module_config| module_config.id())
+                .map(|module| module.id())
+                .filter(|id| !found_modules.contains(id))
                 .collect();
-            log::warn!(
-                "Missing {} required modules for scenario {} ({})",
-                missing_modules.len(),
-                scenario.name(),
-                scenario.path().display(),
-            );
-            for missing_module in missing_modules {
-                scenario.add_error(ScenarioError::RequiredModuleNotFound(missing_module));
+            if !missing_modules.is_empty() {
+                log::warn!(
+                    "Missing {} required modules for scenario {} ({})",
+                    missing_modules.len(),
+                    scenario.name(),
+                    scenario.path().display(),
+                );
+                for missing_module in missing_modules {
+                    scenario.add_error(ScenarioError::RequiredModuleNotFound(missing_module));
+                }
             }
         }
 
@@ -74,9 +82,12 @@ fn load_modules(modules_path: &[PathBuf]) -> HashMap<ModuleId, Module> {
         })
         .collect();
 
+    log::info!("{} installed modules detected.", manifests.len());
+
     // Compute dependency order (Topological sort)
     // TODO: For all the rest that cannot be sorted... shove them in at the
     // end and they will encounter errors.
+    let ids: Vec<_> = manifests.keys().cloned().collect();
     let edges: Vec<(ModuleId, ModuleId)> = manifests
         .iter()
         .flat_map(|(id, (_, manifest))| {
@@ -94,6 +105,9 @@ fn load_modules(modules_path: &[PathBuf]) -> HashMap<ModuleId, Module> {
             edges
         },
     );
+    for id in &ids {
+        incoming.entry(id).or_default();
+    }
     let outgoing = edges.iter().fold(
         HashMap::<&ModuleId, HashSet<&ModuleId>>::with_capacity(manifests.len()),
         |mut edges, (from, to)| {
@@ -107,6 +121,7 @@ fn load_modules(modules_path: &[PathBuf]) -> HashMap<ModuleId, Module> {
         .filter(|(_, from_set)| from_set.is_empty())
         .map(|(to, _)| *to)
         .collect();
+    incoming.retain(|_, set| !set.is_empty());
     while !unlocked.is_empty() {
         let source = unlocked.pop().unwrap();
         sorted.push(source);
@@ -121,6 +136,12 @@ fn load_modules(modules_path: &[PathBuf]) -> HashMap<ModuleId, Module> {
         }
     }
 
+    log::debug!("Dependency graph: {:?}", sorted);
+    for (id, _) in incoming.into_iter() {
+        log::warn!("Dependencies of module {id} cause a cycle");
+        sorted.push(id);
+    }
+
     // Load all modules for real
     let mut modules = HashMap::with_capacity(manifests.len());
     for id in sorted.into_iter().cloned() {
@@ -128,6 +149,13 @@ fn load_modules(modules_path: &[PathBuf]) -> HashMap<ModuleId, Module> {
         // The dependent module will detect it is missing and report the error.
         if let Some((path, manifest)) = manifests.remove(&id) {
             let module = Module::load(path, manifest, &modules);
+            if !module.is_valid() {
+                log::warn!(
+                    "Module {} encountered {} errors while loading",
+                    module.id(),
+                    module.errors().len()
+                );
+            }
             modules.insert(id, module);
         }
     }

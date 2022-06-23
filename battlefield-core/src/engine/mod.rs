@@ -46,19 +46,25 @@ impl Engine {
         state: &State,
     ) -> crate::Result<Vec<Command>> {
         let mut scope = rhai::Scope::new();
-        scope.push("commands", Vec::<Command>::new());
+        scope.push("__runtime_commands", Vec::<Command>::new());
         scope.push_constant("scenario", scenario.clone());
         scope.push_constant("state", state.clone());
 
         let mut engine = rhai::Engine::new();
+        engine.register_global_module(crate::runtime::MODULE.clone());
         for (name, config) in scenario.modules() {
             let module = self.require_module(config.id())?;
             engine.register_static_module(format!("battlefield::{name}"), module.ast().unwrap());
         }
+        let mut commands = vec![];
         for (name, _) in scenario.modules() {
-            engine.run_with_scope(&mut scope, &format!("battlefield::{name}::commands();"))?;
+            let module_commands: Vec<String> = engine.eval_with_scope(
+                &mut scope,
+                &format!("battlefield::{name}::commands(scenario, scope);"),
+            )?;
+            commands.extend(module_commands.into_iter().map(Command));
         }
-        Ok(scope.get_value("commands").unwrap())
+        Ok(commands)
     }
 
     pub fn perform(
