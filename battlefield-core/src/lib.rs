@@ -16,7 +16,7 @@ mod runtime {
     use rhai::module_resolvers::DummyModuleResolver;
     use rhai::{Engine, Module, Shared};
 
-    const RUNTIME_SOURCE: &'static str =
+    const RUNTIME_SOURCE: &str =
         include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/runtime/runtime.rhai"));
 
     lazy_static! {
