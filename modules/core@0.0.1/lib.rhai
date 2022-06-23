@@ -1,5 +1,5 @@
 import "commands" as cmds;
 
-fn commands() {
-    cmds::commands();
+fn commands(scenario, state) {
+    cmds::commands(scenario, state);
 }

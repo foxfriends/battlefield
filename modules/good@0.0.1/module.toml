@@ -1,0 +1,6 @@
+[module]
+name = "good"
+version = "0.0.1"
+
+[dependencies]
+extras = "0.0.1"
