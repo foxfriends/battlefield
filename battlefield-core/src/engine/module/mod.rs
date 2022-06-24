@@ -100,16 +100,6 @@ impl Module {
         self.ast.clone()
     }
 
-    #[allow(dead_code)]
-    pub(crate) fn perform(
-        &self,
-        _command: Command,
-        _scenario: &Scenario,
-        _state: &mut State,
-    ) -> crate::Result<Value> {
-        Ok(Value::default())
-    }
-
     pub fn dependencies(&self) -> impl Iterator<Item = &ModuleConfig> {
         self.manifest
             .iter()
