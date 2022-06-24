@@ -17,7 +17,7 @@ pub struct Entity {
 }
 
 #[derive(Clone, Serialize, Deserialize, Default, Debug)]
-#[serde(transparent)]
 pub struct State {
+    #[serde(default)]
     entities: Vec<Entity>,
 }

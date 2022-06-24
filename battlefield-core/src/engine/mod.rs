@@ -46,7 +46,6 @@ impl Engine {
         state: &State,
     ) -> crate::Result<Vec<Command>> {
         let mut scope = rhai::Scope::new();
-        scope.push("__runtime_commands", Vec::<Command>::new());
         scope.push_constant("scenario", scenario.clone());
         scope.push_constant("state", state.clone());
 
@@ -58,11 +57,17 @@ impl Engine {
         }
         let mut commands = vec![];
         for (name, _) in scenario.modules() {
-            let module_commands: Vec<String> = engine.eval_with_scope(
+            let module_commands: rhai::Array = engine.eval_with_scope(
                 &mut scope,
-                &format!("battlefield::{name}::commands(scenario, scope);"),
+                &format!("battlefield::{name}::commands(scenario, state);"),
             )?;
-            commands.extend(module_commands.into_iter().map(Command));
+            commands.extend(
+                module_commands
+                    .into_iter()
+                    .map(|string| Ok(Command(string.into_string()?)))
+                    .collect::<Result<Vec<Command>, &str>>()
+                    .map_err(|type_name| crate::Error::internal(crate::ErrorKind::RuntimeError, format!("`commands` must return an array of strings, but it contained a {type_name}.")))?,
+            );
         }
         Ok(commands)
     }

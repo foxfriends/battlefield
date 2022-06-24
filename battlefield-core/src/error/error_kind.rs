@@ -2,4 +2,5 @@
 pub enum ErrorKind {
     ModuleNotFound,
     ScenarioNotFound,
+    RuntimeError,
 }
