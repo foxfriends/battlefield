@@ -45,8 +45,6 @@ impl Module {
 
         let mut errors = vec![];
         let mut engine = rhai::Engine::new();
-
-        engine.register_global_module(crate::runtime::MODULE.clone());
         let mut static_modules = StaticModuleResolver::new();
         for (name, config) in manifest.dependencies() {
             let id = config.id();

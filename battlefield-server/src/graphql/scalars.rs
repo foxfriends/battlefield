@@ -1,4 +1,4 @@
-use juniper::{GraphQLScalar, InputValue, ScalarValue, Value};
+use juniper::{DefaultScalarValue, GraphQLScalar, InputValue, ScalarValue, Value};
 use serde::de::{DeserializeOwned, IntoDeserializer};
 use serde::{Deserialize, Serialize};
 
@@ -29,7 +29,39 @@ fn serde_json_to_output<S: ScalarValue>(json: serde_json::Value) -> Value<S> {
 }
 
 fn input_to_json<S: ScalarValue, V: Serialize + DeserializeOwned>(
-    _v: &InputValue<S>,
+    v: &InputValue<S>,
 ) -> Result<Json<V>, String> {
-    unimplemented!("Currently not needed, as no query takes input Json")
+    Ok(Json(
+        serde_json::from_value(input_to_serde_json(v)?).unwrap(),
+    ))
+}
+
+fn input_to_serde_json<S: ScalarValue>(v: &InputValue<S>) -> Result<serde_json::Value, String> {
+    match v {
+        InputValue::Null => Ok(serde_json::Value::Null),
+        InputValue::Scalar(scalar) => match scalar.clone().into_another() {
+            DefaultScalarValue::Boolean(value) => Ok(serde_json::Value::from(value)),
+            DefaultScalarValue::Int(value) => Ok(serde_json::Value::from(value)),
+            DefaultScalarValue::String(value) => Ok(serde_json::Value::from(value)),
+            DefaultScalarValue::Float(value) => Ok(serde_json::Value::from(value)),
+        },
+        InputValue::List(list) => Ok(serde_json::Value::Array(
+            list.iter()
+                .map(|span| input_to_serde_json(&span.item))
+                .collect::<Result<_, String>>()?,
+        )),
+        InputValue::Object(object) => Ok(serde_json::Value::Object(
+            object
+                .iter()
+                .map(|(key_span, value_span)| {
+                    Ok((
+                        key_span.item.clone(),
+                        input_to_serde_json(&value_span.item)?,
+                    ))
+                })
+                .collect::<Result<_, String>>()?,
+        )),
+        InputValue::Variable(..) => Err("Json scalars may not contain variables".to_owned()),
+        InputValue::Enum(..) => Err("Json scalars may not contain enums".to_owned()),
+    }
 }

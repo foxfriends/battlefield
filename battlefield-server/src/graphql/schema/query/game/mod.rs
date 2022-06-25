@@ -29,6 +29,14 @@ impl Game {
             .collect::<Vec<_>>())
     }
 
+    fn simulate(&self, context: &Context, command: Json<Command>) -> FieldResult<Json<State>> {
+        Ok(Json(context.engine.perform(
+            command.0,
+            &self.0.scenario,
+            &self.0.state,
+        )?))
+    }
+
     async fn scenario(&self) -> Json<Scenario> {
         // TODO: Scenario can likely be converted into an actual GraphQL object
         Json(self.0.scenario.clone())

@@ -1,6 +1,5 @@
 use crate::data::{self, ModuleId};
 use crate::{Command, Error, ErrorKind, State};
-use serde_json::Value;
 use std::collections::HashMap;
 
 mod builder;
@@ -47,7 +46,8 @@ impl Engine {
         scope.push_constant("state", state.clone());
 
         let mut engine = rhai::Engine::new();
-        engine.register_global_module(crate::runtime::MODULE.clone());
+        engine.register_type::<data::Scenario>();
+        engine.register_type::<State>();
         let required_modules = scenario
             .modules()
             .map(|(name, config)| (config.id(), name))
@@ -93,10 +93,61 @@ impl Engine {
 
     pub fn perform(
         &self,
-        _command: Command,
-        _scenario: &data::Scenario,
-        _state: &mut State,
-    ) -> crate::Result<Value> {
-        Ok(Value::default())
+        command: Command,
+        scenario: &data::Scenario,
+        state: &State,
+    ) -> crate::Result<State> {
+        let mut scope = rhai::Scope::new();
+        scope.push_constant("command", command.0);
+        scope.push_constant("scenario", scenario.clone());
+        scope.push_constant("state", state.clone());
+
+        let mut engine = rhai::Engine::new();
+        engine
+            .register_type::<data::Scenario>()
+            .register_type::<State>()
+            .register_fn("set_data", State::set_data)
+            .register_fn("get_data", State::get_data);
+        let required_modules = scenario
+            .modules()
+            .map(|(name, config)| (config.id(), name))
+            .collect::<HashMap<_, _>>();
+
+        let modules = self
+            .modules
+            .iter()
+            .rev()
+            .filter(|module| module.is_valid())
+            .filter(|module| required_modules.contains_key(&module.id()))
+            .collect::<Vec<_>>();
+
+        if required_modules.len() != modules.len() {
+            let missing = required_modules
+                .into_keys()
+                .filter(|key| modules.iter().any(|module| module.id() == *key))
+                .map(|key| key.to_string())
+                .collect::<Vec<_>>();
+            return Err(Error::internal(
+                ErrorKind::ModuleNotFound,
+                format!(
+                    "{} required modules were not found: {}",
+                    missing.len(),
+                    missing.join(", ")
+                ),
+            ));
+        }
+
+        for module in modules {
+            let name = required_modules.get(&module.id()).unwrap();
+            engine.register_static_module(format!("battlefield::{name}"), module.ast().unwrap());
+            let result = engine.eval_with_scope::<rhai::Dynamic>(
+                &mut scope,
+                &format!("battlefield::{name}::perform(scenario, state, command)"),
+            )?;
+            if let Some(new_state) = result.try_cast() {
+                return Ok(new_state);
+            }
+        }
+        Ok(state.clone())
     }
 }
