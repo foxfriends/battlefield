@@ -18,15 +18,15 @@ macro_rules! connection {
     (impl $(<$($lt:lifetime),+>)? for $t:ty as $n:literal) => {
         #[juniper::graphql_object(name = $n)]
         impl$(<$($lt),+>)? $crate::graphql::schema::connection::ConnectionResult<$t> {
-            pub fn total_count(&self) -> i32 {
-                self.connector.len() as i32
+            async fn total_count(&self) -> juniper::FieldResult<i32> {
+                Ok($crate::graphql::schema::connection::Connector::len(&self.connector).await? as i32)
             }
 
-            pub fn edges(&self) -> &[$crate::graphql::schema::connection::Edge<<$t as $crate::graphql::schema::connection::Connector>::Node>] {
+            fn edges(&self) -> &[$crate::graphql::schema::connection::Edge<<$t as $crate::graphql::schema::connection::Connector>::Node>] {
                 self.connection.edges()
             }
 
-            pub fn page_info(&self) -> &$crate::graphql::schema::connection::PageInfo {
+            fn page_info(&self) -> &$crate::graphql::schema::connection::PageInfo {
                 self.connection.page_info()
             }
         }

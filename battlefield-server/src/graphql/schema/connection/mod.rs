@@ -21,11 +21,29 @@ pub struct Connection<T: ConnectionNode> {
 }
 
 impl<T: ConnectionNode> Connection<T> {
+    pub fn new(edges: Vec<Edge<T>>, page_info: PageInfo) -> Self {
+        Self { edges, page_info }
+    }
+
     pub fn edges(&self) -> &[Edge<T>] {
         &self.edges
     }
 
     pub fn page_info(&self) -> &PageInfo {
         &self.page_info
+    }
+
+    pub fn empty_end() -> Self {
+        Self {
+            edges: vec![],
+            page_info: PageInfo::default_end(),
+        }
+    }
+
+    pub fn empty_start() -> Self {
+        Self {
+            edges: vec![],
+            page_info: PageInfo::default_start(),
+        }
     }
 }

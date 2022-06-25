@@ -1,3 +1,5 @@
+use juniper::FieldResult;
+
 use super::super::{Edge, PageInfo};
 use super::{Connection, ConnectionNode, Connector, Cursor};
 
@@ -11,17 +13,18 @@ pub trait IteratorConnector {
     fn items_rev(&self) -> Self::IterRev;
 }
 
+#[async_trait::async_trait]
 impl<T> Connector for T
 where
-    T: IteratorConnector,
+    T: IteratorConnector + Sync + Send,
 {
     type Node = <Self as IteratorConnector>::Node;
 
-    fn len(&self) -> usize {
-        IteratorConnector::len(self)
+    async fn len(&self) -> FieldResult<usize> {
+        Ok(IteratorConnector::len(self))
     }
 
-    fn first(&self, count: usize, after: Cursor) -> Connection<Self::Node> {
+    async fn first(&self, count: usize, after: Cursor) -> FieldResult<Connection<Self::Node>> {
         let has_next_page;
         let mut has_previous_page = false;
         let mut start_cursor = Cursor::Start;
@@ -74,10 +77,10 @@ where
             start_cursor,
             end_cursor,
         };
-        Connection { edges, page_info }
+        Ok(Connection::new(edges, page_info))
     }
 
-    fn last(&self, count: usize, before: Cursor) -> Connection<Self::Node> {
+    async fn last(&self, count: usize, before: Cursor) -> FieldResult<Connection<Self::Node>> {
         let has_next_page;
         let mut has_previous_page = false;
         let mut end_cursor = Cursor::End;
@@ -129,6 +132,6 @@ where
             start_cursor,
             end_cursor,
         };
-        Connection { edges, page_info }
+        Ok(Connection::new(edges, page_info))
     }
 }

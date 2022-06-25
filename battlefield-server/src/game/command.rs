@@ -10,8 +10,8 @@ impl Handler<Command> for Game {
     type Result = ResponseFuture<anyhow::Result<Value>>;
 
     fn handle(&mut self, Command(command): Command, ctx: &mut Self::Context) -> Self::Result {
-        let mut state = self.state.clone();
-        let scenario = self.scenario.clone();
+        let mut state = self.game.state.clone();
+        let scenario = self.game.scenario.clone();
         let engine = self.engine.clone();
         let addr = ctx.address();
         Box::pin(async move {

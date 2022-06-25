@@ -1,5 +1,9 @@
 use super::connection::{ConnectionResult, Connector, Cursor};
 use super::Context;
+use juniper::FieldResult;
+
+mod game;
+use game::GamesConnector;
 
 mod module;
 use module::ModulesConnector;
@@ -17,36 +21,44 @@ impl Query {
     }
 
     /// Lists scenarios loaded by this server
-    fn scenarios_connection<'a>(
+    async fn scenarios_connection<'a>(
         &self,
         context: &'a Context,
         first: Option<i32>,
         after: Option<Cursor>,
         last: Option<i32>,
         before: Option<Cursor>,
-    ) -> ConnectionResult<ScenariosConnector<'a>> {
-        ScenariosConnector::new(context).get(
-            first.map(Into::into),
-            after,
-            last.map(Into::into),
-            before,
-        )
+    ) -> FieldResult<ConnectionResult<ScenariosConnector<'a>>> {
+        ScenariosConnector::new(context)
+            .get(first.map(Into::into), after, last.map(Into::into), before)
+            .await
     }
 
     /// Lists modules loaded by this server
-    fn modules_connection<'a>(
+    async fn modules_connection<'a>(
         &self,
         context: &'a Context,
         first: Option<i32>,
         after: Option<Cursor>,
         last: Option<i32>,
         before: Option<Cursor>,
-    ) -> ConnectionResult<ModulesConnector<'a>> {
-        ModulesConnector::new(context).get(
-            first.map(Into::into),
-            after,
-            last.map(Into::into),
-            before,
-        )
+    ) -> FieldResult<ConnectionResult<ModulesConnector<'a>>> {
+        ModulesConnector::new(context)
+            .get(first.map(Into::into), after, last.map(Into::into), before)
+            .await
+    }
+
+    /// Lists games played on this server
+    async fn games_connection<'a>(
+        &self,
+        context: &'a Context,
+        first: Option<i32>,
+        after: Option<Cursor>,
+        last: Option<i32>,
+        before: Option<Cursor>,
+    ) -> FieldResult<ConnectionResult<GamesConnector<'a>>> {
+        GamesConnector::new(context)
+            .get(first.map(Into::into), after, last.map(Into::into), before)
+            .await
     }
 }

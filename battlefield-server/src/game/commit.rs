@@ -12,12 +12,12 @@ impl Handler<Commit> for Game {
     type Result = MessageResult<Commit>;
 
     fn handle(&mut self, Commit(new_state): Commit, _ctx: &mut Self::Context) -> Self::Result {
-        let old_state_json = serde_json::to_value(&self.state).unwrap();
+        let old_state_json = serde_json::to_value(&self.game.state).unwrap();
         let new_state_json = serde_json::to_value(&new_state).unwrap();
         let patch = diff(&old_state_json, &new_state_json);
-        self.state = new_state;
+        self.game.state = new_state;
 
-        let actions = match self.engine.commands(&self.scenario, &self.state) {
+        let actions = match self.engine.commands(&self.game.scenario, &self.game.state) {
             Ok(actions) => actions,
             Err(error) => return MessageResult(Err(error.into())),
         };

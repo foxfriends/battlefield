@@ -1,8 +1,8 @@
-use crate::db::PgPool;
+use crate::database::{self, PgPool};
 use crate::websocket::SocketHandler;
 use actix::prelude::*;
 use actix::WeakAddr;
-use battlefield_core::{data::Scenario, Engine, State};
+use battlefield_core::{data::Scenario, Engine};
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -19,9 +19,7 @@ pub use get_state::GetState;
 pub use subscribe::Subscribe;
 
 pub struct Game {
-    id: Uuid,
-    scenario: Scenario,
-    state: State,
+    game: database::Game,
     db: PgPool,
     subscribers: Vec<WeakAddr<SocketHandler>>,
     engine: Arc<Engine>,
@@ -29,23 +27,14 @@ pub struct Game {
 
 impl Game {
     pub fn id(&self) -> Uuid {
-        self.id
+        self.game.id
     }
 
     pub async fn new(scenario: Scenario, db: PgPool, engine: Arc<Engine>) -> anyhow::Result<Self> {
         let mut conn = db.acquire().await?;
-        let scenario_json = serde_json::to_value(&scenario).unwrap();
-        let game = sqlx::query!(
-            "INSERT INTO games (scenario) values ($1) RETURNING id, state",
-            scenario_json
-        )
-        .fetch_one(&mut conn)
-        .await?;
-        let state = serde_json::from_value(game.state)?;
+        let game = database::Game::create(scenario, &mut conn).await?;
         Ok(Self {
-            id: game.id,
-            scenario,
-            state,
+            game,
             db,
             subscribers: vec![],
             engine,
@@ -54,15 +43,9 @@ impl Game {
 
     pub async fn load(id: Uuid, db: PgPool, engine: Arc<Engine>) -> anyhow::Result<Self> {
         let mut conn = db.acquire().await?;
-        let game = sqlx::query!("SELECT state, scenario FROM games WHERE id = $1", id)
-            .fetch_one(&mut conn)
-            .await?;
-        let state = serde_json::from_value(game.state)?;
-        let scenario = serde_json::from_value(game.scenario)?;
+        let game = database::Game::load(id, &mut conn).await?;
         Ok(Self {
-            id,
-            state,
-            scenario,
+            game,
             db,
             subscribers: vec![],
             engine,
@@ -74,10 +57,10 @@ impl Actor for Game {
     type Context = Context<Self>;
 
     fn stopped(&mut self, ctx: &mut Self::Context) {
-        log::debug!("Stopping and saving game {}", self.id);
+        log::debug!("Stopping and saving game {}", self.game.id);
         let db = self.db.clone();
-        let json_state = serde_json::to_value(&self.state).unwrap();
-        let id = self.id;
+        let json_state = serde_json::to_value(&self.game.state).unwrap();
+        let id = self.game.id;
         let future = async move {
             match db.acquire().await {
                 Ok(mut conn) => {

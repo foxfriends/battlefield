@@ -1,4 +1,4 @@
-use crate::db::PgPool;
+use crate::database::PgPool;
 use crate::game::Game;
 use actix::prelude::*;
 use actix::WeakAddr;

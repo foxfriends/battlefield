@@ -349,6 +349,7 @@ dependencies = [
  "actix-web",
  "actix-web-actors",
  "anyhow",
+ "async-trait",
  "battlefield-core",
  "bytestring",
  "dotenv",
