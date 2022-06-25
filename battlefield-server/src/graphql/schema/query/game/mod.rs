@@ -1,4 +1,5 @@
 use crate::database;
+use crate::directory::LookupExisting;
 use crate::graphql::schema::connection::{connection_edge, ConnectionNode, Cursor};
 use crate::graphql::{Context, Json};
 use battlefield_core::Command;
@@ -6,6 +7,9 @@ use juniper::FieldResult;
 
 mod games_connector;
 pub use games_connector::GamesConnector;
+
+mod live_game;
+use live_game::LiveGame;
 
 pub struct Game(pub database::Game);
 
@@ -22,6 +26,15 @@ impl Game {
             .into_iter()
             .map(Json)
             .collect::<Vec<_>>())
+    }
+
+    async fn live<'a>(&'a self, context: &Context) -> FieldResult<Option<LiveGame<'a>>> {
+        let addr = context.directory.send(LookupExisting(self.0.id)).await?;
+        let addr = match addr {
+            None => return Ok(None),
+            Some(addr) => addr,
+        };
+        Ok(Some(LiveGame { game: &self.0, addr }))
     }
 }
 

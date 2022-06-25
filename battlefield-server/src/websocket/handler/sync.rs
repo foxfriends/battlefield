@@ -1,5 +1,5 @@
 use super::{Notification, SocketHandler};
-use crate::game::GetState;
+use crate::game::{GetState, GetCommands};
 use actix::prelude::*;
 
 #[derive(Message)]
@@ -13,15 +13,17 @@ impl Handler<Sync> for SocketHandler {
         let game = self.game.clone();
         let socket = ctx.address();
         Box::pin(async move {
-            let response = game
-                .send(GetState)
+            let state = game.send(GetState).await?;
+            let commands = game
+                .send(GetCommands)
                 .await
-                .map(|result| match result {
-                    Ok((state, actions)) => Notification::Sync { state, actions },
-                    Err(error) => Notification::error(error),
-                })
-                .unwrap_or_else(Notification::error);
-            socket.do_send(response);
+                .map_err(Notification::error)
+                .and_then(|commands| commands.map_err(Notification::error));
+            let notification = match commands {
+                Ok(commands) => Notification::Sync { state, commands },
+                Err(error) => error,
+            };
+            socket.do_send(notification);
             Ok(())
         })
     }

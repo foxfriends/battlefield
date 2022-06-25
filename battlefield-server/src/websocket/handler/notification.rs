@@ -12,15 +12,15 @@ pub enum Notification {
         id: Uuid,
         scenario: Scenario,
         state: State,
-        actions: Vec<Command>,
+        commands: Vec<Command>,
     },
     Sync {
         state: State,
-        actions: Vec<Command>,
+        commands: Vec<Command>,
     },
     Update {
         patch: Patch,
-        actions: Vec<Command>,
+        commands: Vec<Command>,
     },
     Err(String),
 }

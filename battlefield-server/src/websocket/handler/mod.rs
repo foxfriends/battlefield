@@ -1,4 +1,4 @@
-use crate::game::{Game, GetScenario, GetState, Subscribe};
+use crate::game::{Game, GetScenario, GetState, Subscribe, GetCommands};
 use actix::prelude::*;
 use actix_web_actors::ws;
 use serde::Deserialize;
@@ -34,8 +34,15 @@ impl Actor for SocketHandler {
         let socket = ctx.address();
         game.do_send(Subscribe(socket.downgrade()));
         let future = async move {
-            let (state, actions) = match game.send(GetState).await {
-                Ok(Ok(state)) => state,
+            let state = match game.send(GetState).await {
+                Ok(state) => state,
+                Err(error) => {
+                    socket.do_send(Notification::error(error));
+                    return;
+                }
+            };
+            let commands = match game.send(GetCommands).await {
+                Ok(Ok(commands)) => commands,
                 Ok(Err(error)) => {
                     socket.do_send(Notification::error(error));
                     return;
@@ -56,7 +63,7 @@ impl Actor for SocketHandler {
                 id: game_id,
                 scenario,
                 state,
-                actions,
+                commands,
             });
         };
         future.into_actor(self).spawn(ctx);

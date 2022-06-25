@@ -17,15 +17,15 @@ impl Handler<Commit> for Game {
         let patch = diff(&old_state_json, &new_state_json);
         self.game.state = new_state;
 
-        let actions = match self.engine.commands(&self.game.scenario, &self.game.state) {
-            Ok(actions) => actions,
+        let commands = match self.engine.commands(&self.game.scenario, &self.game.state) {
+            Ok(commands) => commands,
             Err(error) => return MessageResult(Err(error.into())),
         };
         for subscriber in &self.subscribers {
             if let Some(addr) = subscriber.upgrade() {
                 addr.do_send(Notification::Update {
                     patch: patch.clone(),
-                    actions: actions.clone(),
+                    commands: commands.clone(),
                 });
             }
         }

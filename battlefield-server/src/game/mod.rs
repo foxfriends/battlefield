@@ -8,12 +8,14 @@ use uuid::Uuid;
 
 mod command;
 mod commit;
+mod get_commands;
 mod get_scenario;
 mod get_state;
 mod subscribe;
 
 pub use command::Command;
 use commit::Commit;
+pub use get_commands::GetCommands;
 pub use get_scenario::GetScenario;
 pub use get_state::GetState;
 pub use subscribe::Subscribe;
