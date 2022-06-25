@@ -1,6 +1,5 @@
 use crate::data::{ModuleConfig, ModuleId, ModuleManifest};
 use rhai::module_resolvers::FileModuleResolver;
-use std::collections::HashMap;
 use std::fs::read_to_string;
 use std::path::{Path, PathBuf};
 
@@ -21,7 +20,7 @@ impl Module {
     pub(crate) fn load(
         path: PathBuf,
         manifest: crate::Result<ModuleManifest>,
-        modules: &HashMap<ModuleId, Module>,
+        modules: &Vec<Module>,
     ) -> Self {
         // NOTE: these are all unwrapping because this method should only be called
         // after the caller has already validated the path. That may have to change
@@ -49,7 +48,11 @@ impl Module {
         engine.register_global_module(crate::runtime::MODULE.clone());
         for (name, config) in manifest.dependencies() {
             let id = config.id();
-            match modules.get(&id).and_then(|module| module.ast()) {
+            let module = modules
+                .iter()
+                .find(|module| module.id() == id)
+                .and_then(|module| module.ast());
+            match module {
                 Some(module) => {
                     engine.register_static_module(format!("battlefield::{name}"), module);
                 }

@@ -34,7 +34,7 @@ impl EngineBuilder {
     }
 }
 
-fn load_modules(modules_path: &[PathBuf]) -> HashMap<ModuleId, Module> {
+fn load_modules(modules_path: &[PathBuf]) -> Vec<Module> {
     // load each module's manifest
     let mut manifests: HashMap<ModuleId, (PathBuf, crate::Result<ModuleManifest>)> = modules_path
         .iter()
@@ -125,7 +125,7 @@ fn load_modules(modules_path: &[PathBuf]) -> HashMap<ModuleId, Module> {
     }
 
     // Load all modules for real
-    let mut modules = HashMap::with_capacity(manifests.len());
+    let mut modules = Vec::with_capacity(manifests.len());
     for id in sorted.into_iter().cloned() {
         // If a dependency is not installed, we just ignore it
         // The dependent module will detect it is missing and report the error.
@@ -143,24 +143,21 @@ fn load_modules(modules_path: &[PathBuf]) -> HashMap<ModuleId, Module> {
                     }
                 }
             }
-            modules.insert(id, module);
+            modules.push(module);
         }
     }
 
     if log::log_enabled!(Level::Info) {
         log::info!(
             "{} installed modules loaded successfully.",
-            modules.values().filter(|module| module.is_valid()).count()
+            modules.iter().filter(|module| module.is_valid()).count()
         );
     }
 
     modules
 }
 
-fn load_scenarios(
-    scenarios_path: &[PathBuf],
-    modules: &HashMap<ModuleId, Module>,
-) -> Vec<Scenario> {
+fn load_scenarios(scenarios_path: &[PathBuf], modules: &Vec<Module>) -> Vec<Scenario> {
     let mut scenarios: Vec<_> = scenarios_path
         .iter()
         .filter_map(|directory| std::fs::read_dir(directory).ok())
@@ -183,7 +180,11 @@ fn load_scenarios(
     for scenario in &mut scenarios {
         let found_modules: HashSet<_> = scenario
             .modules()
-            .filter_map(|module_config| modules.get(&module_config.id()))
+            .filter_map(|module_config| {
+                modules
+                    .iter()
+                    .find(|module| module.id() == module_config.id())
+            })
             .filter(|module| module.is_valid())
             .map(|module| module.id())
             .collect();

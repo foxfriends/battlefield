@@ -14,16 +14,10 @@ pub use scenario::{Scenario, ScenarioError};
 #[derive(Default)]
 pub struct Engine {
     scenarios: Vec<Scenario>,
-    modules: HashMap<ModuleId, Module>,
+    modules: Vec<Module>,
 }
 
 impl Engine {
-    fn require_module(&self, id: ModuleId) -> crate::Result<&Module> {
-        self.modules.get(&id).ok_or_else(|| {
-            Error::internal(ErrorKind::ModuleNotFound, format!("Module {id} not found"))
-        })
-    }
-
     pub fn scenario(&self, name: &str) -> Option<&Scenario> {
         self.scenarios
             .iter()
@@ -36,8 +30,10 @@ impl Engine {
         self.scenarios.iter()
     }
 
-    pub fn modules(&self) -> impl Iterator<Item = &Module> + ExactSizeIterator {
-        self.modules.values()
+    pub fn modules(
+        &self,
+    ) -> impl Iterator<Item = &Module> + DoubleEndedIterator + ExactSizeIterator {
+        self.modules.iter()
     }
 
     pub fn commands(
@@ -51,12 +47,38 @@ impl Engine {
 
         let mut engine = rhai::Engine::new();
         engine.register_global_module(crate::runtime::MODULE.clone());
-        for (name, config) in scenario.modules() {
-            let module = self.require_module(config.id())?;
-            engine.register_static_module(format!("battlefield::{name}"), module.ast().unwrap());
+        let required_modules = scenario
+            .modules()
+            .map(|(name, config)| (config.id(), name))
+            .collect::<HashMap<_, _>>();
+
+        let modules = self
+            .modules
+            .iter()
+            .filter(|module| module.is_valid())
+            .filter(|module| required_modules.contains_key(&module.id()))
+            .collect::<Vec<_>>();
+
+        if required_modules.len() != modules.len() {
+            let missing = required_modules
+                .into_keys()
+                .filter(|key| modules.iter().any(|module| module.id() == *key))
+                .map(|key| key.to_string())
+                .collect::<Vec<_>>();
+            return Err(Error::internal(
+                ErrorKind::ModuleNotFound,
+                format!(
+                    "{} required modules were not found: {}",
+                    missing.len(),
+                    missing.join(", ")
+                ),
+            ));
         }
+
         let mut commands = vec![];
-        for (name, _) in scenario.modules() {
+        for module in modules {
+            let name = required_modules.get(&module.id()).unwrap();
+            engine.register_static_module(format!("battlefield::{name}"), module.ast().unwrap());
             let module_commands: rhai::Array = engine.eval_with_scope(
                 &mut scope,
                 &format!("battlefield::{name}::commands(scenario, state);"),
