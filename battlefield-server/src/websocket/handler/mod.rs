@@ -1,4 +1,4 @@
-use crate::game::{Game, GetScenario, GetState, Subscribe, GetCommands};
+use crate::game::{Game, GetCommands, GetScenario, GetState, Subscribe};
 use actix::prelude::*;
 use actix_web_actors::ws;
 use serde::Deserialize;

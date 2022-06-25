@@ -1,5 +1,5 @@
 use super::{Notification, SocketHandler};
-use crate::game::{GetState, GetCommands};
+use crate::game::{GetCommands, GetState};
 use actix::prelude::*;
 
 #[derive(Message)]

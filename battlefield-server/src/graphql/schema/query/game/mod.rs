@@ -34,7 +34,10 @@ impl Game {
             None => return Ok(None),
             Some(addr) => addr,
         };
-        Ok(Some(LiveGame { game: &self.0, addr }))
+        Ok(Some(LiveGame {
+            game: &self.0,
+            addr,
+        }))
     }
 }
 

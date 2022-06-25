@@ -11,7 +11,11 @@ pub struct LookupExisting(pub Uuid);
 impl Handler<LookupExisting> for Directory {
     type Result = ResponseFuture<Option<Addr<Game>>>;
 
-    fn handle(&mut self, LookupExisting(id): LookupExisting, _ctx: &mut Self::Context) -> Self::Result {
+    fn handle(
+        &mut self,
+        LookupExisting(id): LookupExisting,
+        _ctx: &mut Self::Context,
+    ) -> Self::Result {
         let directory = self.clone();
         Box::pin(async move {
             let games = directory.games.lock().await;

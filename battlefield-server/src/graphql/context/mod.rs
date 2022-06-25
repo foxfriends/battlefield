@@ -32,7 +32,11 @@ impl FromRequest for Context {
             let engine = engine.await?.into_inner();
             let database = (**database.await?).clone();
             let directory = (**directory.await?).clone();
-            Ok(Self { engine, database, directory })
+            Ok(Self {
+                engine,
+                database,
+                directory,
+            })
         })
     }
 }
