@@ -1,5 +1,5 @@
 use crate::data::{ModuleConfig, ModuleId, ModuleManifest};
-use rhai::module_resolvers::FileModuleResolver;
+use rhai::module_resolvers::{FileModuleResolver, ModuleResolversCollection, StaticModuleResolver};
 use std::fs::read_to_string;
 use std::path::{Path, PathBuf};
 
@@ -45,7 +45,9 @@ impl Module {
 
         let mut errors = vec![];
         let mut engine = rhai::Engine::new();
+
         engine.register_global_module(crate::runtime::MODULE.clone());
+        let mut static_modules = StaticModuleResolver::new();
         for (name, config) in manifest.dependencies() {
             let id = config.id();
             let module = modules
@@ -54,12 +56,16 @@ impl Module {
                 .and_then(|module| module.ast());
             match module {
                 Some(module) => {
-                    engine.register_static_module(format!("battlefield::{name}"), module);
+                    // TODO: see if the Rhai guys agree to allow StaticModuleResolver to accept a `Shared<Module>`
+                    static_modules.insert(name, (*module).clone());
                 }
                 None => errors.push(ModuleError::UnresolvedDependency(id)),
             }
         }
-        engine.set_module_resolver(FileModuleResolver::new_with_path(&path));
+        let mut resolver = ModuleResolversCollection::new();
+        resolver.push(FileModuleResolver::new_with_path(&path));
+        resolver.push(static_modules);
+        engine.set_module_resolver(resolver);
 
         let ast = errors
             .is_empty()

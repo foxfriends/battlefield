@@ -1,4 +1,6 @@
+import "extras" as extras;
+
 fn commands(scenario, state, commands) {
-    commands.push(battlefield::extras::test());
+    commands.push(extras::test());
     commands
 }

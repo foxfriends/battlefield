@@ -21,3 +21,4 @@ description = "Open grassy plains. Does not provide much cover."
 
 [modules]
 core = "0.0.1"
+good = "0.0.1"
