@@ -2,7 +2,8 @@ use crate::database;
 use crate::directory::LookupExisting;
 use crate::graphql::schema::connection::{connection_edge, ConnectionNode, Cursor};
 use crate::graphql::{Context, Json};
-use battlefield_core::Command;
+use battlefield_core::data::Scenario;
+use battlefield_core::{Command, State};
 use juniper::FieldResult;
 
 mod games_connector;
@@ -26,6 +27,15 @@ impl Game {
             .into_iter()
             .map(Json)
             .collect::<Vec<_>>())
+    }
+
+    async fn scenario(&self) -> Json<Scenario> {
+        // TODO: Scenario can likely be converted into an actual GraphQL object
+        Json(self.0.scenario.clone())
+    }
+
+    async fn state(&self) -> Json<State> {
+        Json(self.0.state.clone())
     }
 
     async fn live<'a>(&'a self, context: &Context) -> FieldResult<Option<LiveGame<'a>>> {
