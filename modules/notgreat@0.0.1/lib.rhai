@@ -1,1 +1,1 @@
-fn commands(scenario, state) { [] }
+fn commands(scenario, state, commands) { commands }

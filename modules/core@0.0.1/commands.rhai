@@ -1,6 +1,6 @@
-fn commands(scenario, state) {
+fn commands(scenario, state, commands) {
     // Some high quality commands right here.
-    let commands = ["lose()"];
     commands.push("win()");
+    commands.push("lose()");
     commands
 }

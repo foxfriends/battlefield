@@ -1,13 +1,11 @@
 use super::ModuleId;
 use serde::{Deserialize, Deserializer, Serialize};
-use serde_json::Value;
 use std::collections::HashMap;
 
 #[derive(Clone, Serialize, Debug)]
 pub struct ModuleConfig {
     pub(crate) name: String,
     pub(crate) version: String,
-    pub(crate) configuration: HashMap<String, Value>,
 }
 
 impl ModuleConfig {
@@ -20,24 +18,17 @@ impl ModuleConfig {
 pub struct ModuleConfigRepr {
     pub(crate) name: Option<String>,
     pub(crate) version: String,
-    #[serde(default)]
-    pub(crate) configuration: HashMap<String, Value>,
 }
 
 impl ModuleConfig {
     fn from_version(name: String, version: String) -> Self {
-        Self {
-            name,
-            version,
-            configuration: HashMap::default(),
-        }
+        Self { name, version }
     }
 
     fn from_repr(name: &str, repr: ModuleConfigRepr) -> Self {
         Self {
             name: repr.name.unwrap_or_else(|| name.to_owned()),
             version: repr.version,
-            configuration: repr.configuration,
         }
     }
 }

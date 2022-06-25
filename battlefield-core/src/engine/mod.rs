@@ -42,6 +42,7 @@ impl Engine {
         state: &State,
     ) -> crate::Result<Vec<Command>> {
         let mut scope = rhai::Scope::new();
+        scope.push("commands", rhai::Array::default());
         scope.push_constant("scenario", scenario.clone());
         scope.push_constant("state", state.clone());
 
@@ -75,23 +76,19 @@ impl Engine {
             ));
         }
 
-        let mut commands = vec![];
         for module in modules {
             let name = required_modules.get(&module.id()).unwrap();
             engine.register_static_module(format!("battlefield::{name}"), module.ast().unwrap());
-            let module_commands: rhai::Array = engine.eval_with_scope(
+            engine.run_with_scope(
                 &mut scope,
-                &format!("battlefield::{name}::commands(scenario, state);"),
+                &format!("commands = battlefield::{name}::commands(scenario, state, commands);"),
             )?;
-            commands.extend(
-                module_commands
-                    .into_iter()
-                    .map(|string| Ok(Command(string.into_string()?)))
-                    .collect::<Result<Vec<Command>, &str>>()
-                    .map_err(|type_name| crate::Error::internal(crate::ErrorKind::RuntimeError, format!("`commands` must return an array of strings, but it contained a {type_name}.")))?,
-            );
         }
-        Ok(commands)
+        scope.get_value::<rhai::Array>("commands").unwrap()
+            .into_iter()
+            .map(|string| Ok(Command(string.into_string()?)))
+            .collect::<Result<Vec<Command>, &str>>()
+            .map_err(|type_name| crate::Error::internal(crate::ErrorKind::RuntimeError, format!("`commands` must return an array of strings, but it contained a {type_name}.")))
     }
 
     pub fn perform(

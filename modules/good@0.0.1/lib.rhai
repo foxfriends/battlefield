@@ -1,4 +1,4 @@
-fn commands(scenario, state) {
-    battlefield::extras::test();
-    []
+fn commands(scenario, state, commands) {
+    commands.push(battlefield::extras::test());
+    commands
 }
