@@ -16,7 +16,7 @@ impl<T: Connector> ConnectionResult<T> {
 
 macro_rules! connection {
     (impl $(<$($lt:lifetime),+>)? for $t:ty as $n:literal) => {
-        #[juniper::graphql_object(name = $n)]
+        #[juniper::graphql_object(name = $n, context = $crate::graphql::Context)]
         impl$(<$($lt),+>)? $crate::graphql::schema::connection::ConnectionResult<$t> {
             async fn total_count(&self) -> juniper::FieldResult<i32> {
                 Ok($crate::graphql::schema::connection::Connector::len(&self.connector).await? as i32)

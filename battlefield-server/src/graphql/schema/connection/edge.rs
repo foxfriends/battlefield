@@ -4,7 +4,7 @@ pub struct Edge<T: ConnectionNode>(pub(crate) T);
 
 macro_rules! connection_edge {
     (impl $(<$($lt:lifetime),+>)? for $t:ty as $n:literal) => {
-        #[juniper::graphql_object(name = $n)]
+        #[juniper::graphql_object(name = $n, context = $crate::graphql::Context)]
         impl$(<$($lt),+>)? $crate::graphql::schema::connection::Edge<$t> {
             pub fn node(&self) -> &$t {
                 &self.0
