@@ -126,10 +126,10 @@ fn load_modules(modules_path: &[PathBuf]) -> Vec<Module> {
 
     // Load all modules for real
     let mut modules = Vec::with_capacity(manifests.len());
-    for id in sorted.into_iter().cloned() {
+    for id in sorted.into_iter() {
         // If a dependency is not installed, we just ignore it
         // The dependent module will detect it is missing and report the error.
-        if let Some((path, manifest)) = manifests.remove(&id) {
+        if let Some((path, manifest)) = manifests.remove(id) {
             let module = Module::load(path, manifest, &modules);
             if log::log_enabled!(Level::Warn) && !module.is_valid() {
                 log::warn!(
@@ -157,7 +157,7 @@ fn load_modules(modules_path: &[PathBuf]) -> Vec<Module> {
     modules
 }
 
-fn load_scenarios(scenarios_path: &[PathBuf], modules: &Vec<Module>) -> Vec<Scenario> {
+fn load_scenarios(scenarios_path: &[PathBuf], modules: &[Module]) -> Vec<Scenario> {
     let mut scenarios: Vec<_> = scenarios_path
         .iter()
         .filter_map(|directory| std::fs::read_dir(directory).ok())

@@ -20,7 +20,7 @@ impl Module {
     pub(crate) fn load(
         path: PathBuf,
         manifest: crate::Result<ModuleManifest>,
-        modules: &Vec<Module>,
+        modules: &[Module],
     ) -> Self {
         // NOTE: these are all unwrapping because this method should only be called
         // after the caller has already validated the path. That may have to change
