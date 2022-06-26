@@ -1,7 +1,0 @@
-[module]
-name = "invalid"
-version = "0.0.1"
-
-[dependencies]
-extras = "0.0.1"
-notgreat = "0.0.1"
