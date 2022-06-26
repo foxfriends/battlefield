@@ -3,7 +3,6 @@ use crate::data::ModuleManifest;
 use crate::ScenarioError;
 use log::Level;
 use std::collections::{HashMap, HashSet};
-use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
 #[derive(Default)]
@@ -165,14 +164,11 @@ fn load_scenarios(scenarios_path: &[PathBuf], modules: &[Module]) -> Vec<Scenari
         .filter_map(|entry| {
             let entry = entry.ok()?;
             let metadata = entry.metadata().ok()?;
-            if !metadata.is_file() {
+            if !metadata.is_dir() {
                 return None;
             }
             let path = entry.path();
-            if path.extension().and_then(OsStr::to_str) != Some("toml") {
-                return None;
-            }
-            Some(Scenario::from_file(path))
+            Some(Scenario::from_file(path.join("scenario.toml")))
         })
         .collect();
 

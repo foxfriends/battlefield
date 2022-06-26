@@ -1,6 +1,9 @@
 name = "Field"
 description = "An open field with nowhere to hide."
 
+[modules]
+core = "0.0.1"
+
 [map]
 tiles = [
     [{tile_type="p",territory="a"}, {tile_type="p",territory="a"}, {tile_type="p",territory="a"}, {tile_type="p",territory="a"}, {tile_type="p"}, {tile_type="p"}, {tile_type="p"}, {tile_type="p"}, {tile_type="p"}, {tile_type="p"}],
@@ -18,6 +21,3 @@ tiles = [
 [map.tile_types.p]
 name = "Plains"
 description = "Open grassy plains. Does not provide much cover."
-
-[modules]
-core = "0.0.1"
