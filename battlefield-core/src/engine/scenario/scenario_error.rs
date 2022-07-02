@@ -3,6 +3,7 @@ use std::fmt::{self, Display};
 
 #[derive(Debug)]
 pub enum ScenarioError {
+    MissingMap(String),
     FailedToLoad(crate::Error),
     RequiredModuleNotFound(ModuleId),
 }
@@ -17,6 +18,9 @@ impl Display for ScenarioError {
             }
             Self::RequiredModuleNotFound(module_id) => {
                 write!(f, "Required module {module_id} not found")
+            }
+            Self::MissingMap(map) => {
+                write!(f, "Map {map} not found")
             }
         }
     }

@@ -11,6 +11,9 @@ use module::ModulesConnector;
 mod scenario;
 use scenario::ScenariosConnector;
 
+mod maps;
+use maps::MapsConnector;
+
 pub struct Query;
 
 #[juniper::graphql_object(context = Context)]
@@ -22,7 +25,7 @@ impl Query {
 
     /// Lists scenarios loaded by this server
     async fn scenarios_connection<'a>(
-        &self,
+        &'a self,
         context: &'a Context,
         first: Option<i32>,
         after: Option<Cursor>,
@@ -34,9 +37,23 @@ impl Query {
             .await
     }
 
+    /// Lists scenarios loaded by this server
+    async fn maps_connection<'a>(
+        &'a self,
+        context: &'a Context,
+        first: Option<i32>,
+        after: Option<Cursor>,
+        last: Option<i32>,
+        before: Option<Cursor>,
+    ) -> FieldResult<ConnectionResult<MapsConnector<'a>>> {
+        MapsConnector::new(context)
+            .get(first.map(Into::into), after, last.map(Into::into), before)
+            .await
+    }
+
     /// Lists modules loaded by this server
     async fn modules_connection<'a>(
-        &self,
+        &'a self,
         context: &'a Context,
         first: Option<i32>,
         after: Option<Cursor>,
@@ -50,7 +67,7 @@ impl Query {
 
     /// Lists games played on this server
     async fn games_connection<'a>(
-        &self,
+        &'a self,
         context: &'a Context,
         first: Option<i32>,
         after: Option<Cursor>,

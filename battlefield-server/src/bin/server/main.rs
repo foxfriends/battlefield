@@ -18,6 +18,7 @@ async fn main() -> anyhow::Result<()> {
     let engine = EngineBuilder::new()
         .add_scenarios(&*env::SCENARIOS_DIR)
         .add_modules(&*env::MODULES_DIR)
+        .add_maps(&*env::MAPS_DIR)
         .build();
     let battlefield = BattlefieldServer::new(&env::DATABASE_URL, engine).await?;
 

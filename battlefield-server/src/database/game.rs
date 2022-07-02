@@ -19,16 +19,18 @@ pub struct Game {
 impl Game {
     pub async fn create(
         scenario: Scenario,
+        state: State,
         conn: impl Executor<'_, Database = Postgres>,
     ) -> anyhow::Result<Self> {
         let scenario_json = serde_json::to_value(&scenario)?;
+        let state_json = serde_json::to_value(&state)?;
         let data = sqlx::query!(
-            "INSERT INTO games (scenario) values ($1) RETURNING id, state",
-            scenario_json
+            "INSERT INTO games (scenario, state) values ($1, $2) RETURNING id",
+            scenario_json,
+            state_json,
         )
         .fetch_one(conn)
         .await?;
-        let state = serde_json::from_value(data.state)?;
         Ok(Self {
             id: data.id,
             scenario,

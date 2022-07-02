@@ -34,7 +34,8 @@ impl Game {
 
     pub async fn new(scenario: Scenario, db: PgPool, engine: Arc<Engine>) -> anyhow::Result<Self> {
         let mut conn = db.acquire().await?;
-        let game = database::Game::create(scenario, &mut conn).await?;
+        let state = engine.initialize(&scenario);
+        let game = database::Game::create(scenario, state, &mut conn).await?;
         Ok(Self {
             game,
             db,

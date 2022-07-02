@@ -1,5 +1,4 @@
-use crate::data;
-use crate::data::ModuleId;
+use crate::data::{self, ModuleId};
 use std::path::{Path, PathBuf};
 
 mod scenario_error;

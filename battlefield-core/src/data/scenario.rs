@@ -1,4 +1,4 @@
-use super::{module_map, Map, ModuleConfig};
+use super::{module_map, ModuleConfig};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -6,7 +6,7 @@ use std::collections::HashMap;
 pub struct Scenario {
     pub(crate) name: String,
     pub(crate) description: String,
-    pub(crate) map: Map,
+    pub(crate) map: String,
     #[serde(deserialize_with = "module_map")]
     pub(crate) modules: HashMap<String, ModuleConfig>,
 }

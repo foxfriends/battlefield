@@ -3,15 +3,18 @@ use crate::{Command, Error, ErrorKind, State};
 use std::collections::HashMap;
 
 mod builder;
+mod map;
 mod module;
 mod scenario;
 
 pub use builder::EngineBuilder;
+pub use map::Map;
 pub use module::Module;
 pub use scenario::{Scenario, ScenarioError};
 
 #[derive(Default)]
 pub struct Engine {
+    maps: Vec<Map>,
     scenarios: Vec<Scenario>,
     modules: Vec<Module>,
 }
@@ -23,10 +26,24 @@ impl Engine {
             .find(|scenario| scenario.name() == name)
     }
 
+    pub fn maps(&self) -> impl Iterator<Item = &Map> + DoubleEndedIterator + ExactSizeIterator {
+        self.maps.iter()
+    }
+
     pub fn scenarios(
         &self,
     ) -> impl Iterator<Item = &Scenario> + DoubleEndedIterator + ExactSizeIterator {
         self.scenarios.iter()
+    }
+
+    pub fn initialize(&self, scenario: &data::Scenario) -> State {
+        let map = self
+            .maps
+            .iter()
+            .filter(|map| map.is_valid())
+            .find(|map| map.name().unwrap() == scenario.map)
+            .unwrap();
+        State::new(map)
     }
 
     pub fn modules(

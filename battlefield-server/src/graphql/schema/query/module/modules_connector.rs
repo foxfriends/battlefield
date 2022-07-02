@@ -25,12 +25,8 @@ impl<'a> IteratorConnector for ModulesConnector<'a> {
         Box::new(self.context.engine.modules().map(Module))
     }
 
-    #[allow(clippy::needless_collect)] // clippy is WRONG
     fn items_rev(&self) -> Self::IterRev {
-        // HACK: since hashmap iterators don't reverse.
-        // Maybe there are more appropriate solutions, but this will do for now.
-        let all_items = self.context.engine.modules().collect::<Vec<_>>();
-        Box::new(all_items.into_iter().rev().map(Module))
+        Box::new(self.context.engine.modules().rev().map(Module))
     }
 }
 

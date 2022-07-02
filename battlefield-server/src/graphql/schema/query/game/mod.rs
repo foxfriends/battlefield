@@ -46,7 +46,7 @@ impl Game {
         Json(self.0.state.clone())
     }
 
-    async fn live<'a>(&'a self, context: &Context) -> FieldResult<Option<LiveGame<'a>>> {
+    async fn live<'a>(&'a self, context: &'a Context) -> FieldResult<Option<LiveGame<'a>>> {
         let addr = context.directory.send(LookupExisting(self.0.id)).await?;
         let addr = match addr {
             None => return Ok(None),

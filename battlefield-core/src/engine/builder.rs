@@ -1,4 +1,4 @@
-use super::{Engine, Module, ModuleId, Scenario};
+use super::{Engine, Map, Module, ModuleId, Scenario};
 use crate::data::ModuleManifest;
 use crate::ScenarioError;
 use log::Level;
@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 #[derive(Default)]
 pub struct EngineBuilder {
     modules_path: Vec<PathBuf>,
+    maps_path: Vec<PathBuf>,
     scenarios_path: Vec<PathBuf>,
 }
 
@@ -21,15 +22,25 @@ impl EngineBuilder {
         self
     }
 
+    pub fn add_maps(mut self, path: impl AsRef<Path>) -> Self {
+        self.maps_path.push(path.as_ref().to_owned());
+        self
+    }
+
     pub fn add_scenarios(mut self, path: impl AsRef<Path>) -> Self {
         self.scenarios_path.push(path.as_ref().to_owned());
         self
     }
 
     pub fn build(self) -> Engine {
+        let maps = load_maps(&self.maps_path);
         let modules = load_modules(&self.modules_path);
-        let scenarios = load_scenarios(&self.scenarios_path, &modules);
-        Engine { scenarios, modules }
+        let scenarios = load_scenarios(&self.scenarios_path, &modules, &maps);
+        Engine {
+            maps,
+            scenarios,
+            modules,
+        }
     }
 }
 
@@ -156,7 +167,30 @@ fn load_modules(modules_path: &[PathBuf]) -> Vec<Module> {
     modules
 }
 
-fn load_scenarios(scenarios_path: &[PathBuf], modules: &[Module]) -> Vec<Scenario> {
+fn load_maps(maps_path: &[PathBuf]) -> Vec<Map> {
+    let maps: Vec<Map> = maps_path
+        .iter()
+        .filter_map(|directory| std::fs::read_dir(directory).ok())
+        .flatten()
+        .filter_map(|entry| {
+            let entry = entry.ok()?;
+            let metadata = entry.metadata().ok()?;
+            if !metadata.is_dir() {
+                return None;
+            }
+            let map = Map::from_file(entry.path());
+            Some(map)
+        })
+        .collect();
+    log::info!("{} installed maps detected.", maps.len());
+    log::info!(
+        "{} installed maps loaded successfully.",
+        maps.iter().filter(|map| map.is_valid()).count()
+    );
+    maps
+}
+
+fn load_scenarios(scenarios_path: &[PathBuf], modules: &[Module], maps: &[Map]) -> Vec<Scenario> {
     let mut scenarios: Vec<_> = scenarios_path
         .iter()
         .filter_map(|directory| std::fs::read_dir(directory).ok())
@@ -173,7 +207,19 @@ fn load_scenarios(scenarios_path: &[PathBuf], modules: &[Module]) -> Vec<Scenari
         .collect();
 
     log::info!("{} installed scenarios detected.", scenarios.len());
-    for scenario in &mut scenarios {
+    for scenario in scenarios
+        .iter_mut()
+        .filter(|scenario| scenario.data().is_some())
+    {
+        let data = scenario.data().unwrap();
+        let map = maps
+            .iter()
+            .filter_map(|map| map.name())
+            .find(|name| *name == data.map);
+        if map.is_none() {
+            scenario.add_error(ScenarioError::MissingMap(data.map.clone()));
+        }
+
         let found_modules: HashSet<_> = scenario
             .modules()
             .filter_map(|module_config| {
