@@ -1,12 +1,15 @@
 use crate::data;
 use std::path::{Path, PathBuf};
 
+mod map_error;
+pub use map_error::MapError;
+
 #[derive(Debug)]
 pub struct Map {
     #[allow(dead_code)]
     path: PathBuf,
     data: Option<data::Map>,
-    errors: Vec<crate::Error>,
+    errors: Vec<MapError>,
 }
 
 impl Map {
@@ -16,7 +19,7 @@ impl Map {
             .and_then(|src| toml::from_str(&src).map_err(Into::into));
         let (data, errors) = match data {
             Ok(data) => (Some(data), vec![]),
-            Err(error) => (None, vec![error]),
+            Err(error) => (None, vec![MapError::FailedToLoad(error)]),
         };
         Self { path, data, errors }
     }
@@ -37,7 +40,7 @@ impl Map {
         self.data.as_ref()
     }
 
-    pub fn errors(&self) -> &[crate::Error] {
+    pub fn errors(&self) -> &[MapError] {
         &self.errors
     }
 }
