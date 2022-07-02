@@ -6,6 +6,8 @@ use std::collections::HashMap;
 pub struct ModuleConfig {
     pub(crate) name: String,
     pub(crate) version: String,
+    #[serde(default)]
+    pub(crate) config: toml::value::Table,
 }
 
 impl ModuleConfig {
@@ -22,13 +24,18 @@ pub struct ModuleConfigRepr {
 
 impl ModuleConfig {
     fn from_version(name: String, version: String) -> Self {
-        Self { name, version }
+        Self {
+            name,
+            version,
+            config: Default::default(),
+        }
     }
 
     fn from_repr(name: &str, repr: ModuleConfigRepr) -> Self {
         Self {
             name: repr.name.unwrap_or_else(|| name.to_owned()),
             version: repr.version,
+            config: Default::default(),
         }
     }
 }

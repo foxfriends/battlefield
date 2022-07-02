@@ -52,16 +52,10 @@ impl Engine {
         self.modules.iter()
     }
 
-    pub fn commands(
+    fn construct_engine<'a>(
         &self,
-        scenario: &data::Scenario,
-        state: &State,
-    ) -> crate::Result<Vec<Command>> {
-        let mut scope = rhai::Scope::new();
-        scope.push("commands", rhai::Array::default());
-        scope.push_constant("scenario", scenario.clone());
-        scope.push_constant("state", state.clone());
-
+        scenario: &'a data::Scenario,
+    ) -> crate::Result<(rhai::Engine, HashMap<ModuleId, &'a str>)> {
         let mut engine = rhai::Engine::new();
         engine.register_type::<data::Scenario>();
         engine.register_type::<State>();
@@ -96,6 +90,22 @@ impl Engine {
         for module in modules {
             let name = required_modules.get(&module.id()).unwrap();
             engine.register_static_module(format!("battlefield::{name}"), module.ast().unwrap());
+        }
+
+        Ok((engine, required_modules))
+    }
+
+    pub fn commands(
+        &self,
+        scenario: &data::Scenario,
+        state: &State,
+    ) -> crate::Result<Vec<Command>> {
+        let mut scope = rhai::Scope::new();
+        scope.push("commands", rhai::Array::default());
+        scope.push_constant("scenario", scenario.clone());
+        scope.push_constant("state", state.clone());
+        let (engine, modules) = self.construct_engine(scenario)?;
+        for name in modules.values() {
             engine.run_with_scope(
                 &mut scope,
                 &format!("commands = battlefield::{name}::commands(scenario, state, commands);"),
@@ -118,45 +128,8 @@ impl Engine {
         scope.push_constant("command", command.0);
         scope.push_constant("scenario", scenario.clone());
         scope.push_constant("state", state.clone());
-
-        let mut engine = rhai::Engine::new();
-        engine
-            .register_type::<data::Scenario>()
-            .register_type::<State>()
-            .register_fn("set_data", State::set_data)
-            .register_fn("get_data", State::get_data);
-        let required_modules = scenario
-            .modules()
-            .map(|(name, config)| (config.id(), name))
-            .collect::<HashMap<_, _>>();
-
-        let modules = self
-            .modules
-            .iter()
-            .rev()
-            .filter(|module| module.is_valid())
-            .filter(|module| required_modules.contains_key(&module.id()))
-            .collect::<Vec<_>>();
-
-        if required_modules.len() != modules.len() {
-            let missing = required_modules
-                .into_keys()
-                .filter(|key| modules.iter().any(|module| module.id() == *key))
-                .map(|key| key.to_string())
-                .collect::<Vec<_>>();
-            return Err(Error::internal(
-                ErrorKind::ModuleNotFound,
-                format!(
-                    "{} required modules were not found: {}",
-                    missing.len(),
-                    missing.join(", ")
-                ),
-            ));
-        }
-
-        for module in modules {
-            let name = required_modules.get(&module.id()).unwrap();
-            engine.register_static_module(format!("battlefield::{name}"), module.ast().unwrap());
+        let (engine, modules) = self.construct_engine(scenario)?;
+        for name in modules.values() {
             let result = engine.eval_with_scope::<rhai::Dynamic>(
                 &mut scope,
                 &format!("battlefield::{name}::perform(scenario, state, command)"),
