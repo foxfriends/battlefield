@@ -1,262 +1,257 @@
 {
   "db": "PostgreSQL",
   "008b4addf2a0db886c98dd19bd89b01e097424d96f188dc0c6aaa78829ba6d89": {
+    "query": "SELECT * FROM games WHERE id > $1 ORDER BY id ASC LIMIT $2",
     "describe": {
       "columns": [
         {
-          "name": "id",
           "ordinal": 0,
+          "name": "id",
           "type_info": "Uuid"
         },
         {
-          "name": "state",
           "ordinal": 1,
+          "name": "state",
           "type_info": "Jsonb"
         },
         {
-          "name": "scenario",
           "ordinal": 2,
+          "name": "scenario",
           "type_info": "Jsonb"
         }
-      ],
-      "nullable": [
-        false,
-        false,
-        false
       ],
       "parameters": {
         "Left": [
           "Uuid",
           "Int8"
         ]
-      }
-    },
-    "query": "SELECT * FROM games WHERE id > $1 ORDER BY id ASC LIMIT $2"
-  },
-  "1b27977e69961be94aa4bfc212ce78ba2ce798682e0c50ce9188811a499f980e": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "state",
-          "ordinal": 1,
-          "type_info": "Jsonb"
-        },
-        {
-          "name": "scenario",
-          "ordinal": 2,
-          "type_info": "Jsonb"
-        }
-      ],
+      },
       "nullable": [
         false,
         false,
         false
+      ]
+    }
+  },
+  "1b27977e69961be94aa4bfc212ce78ba2ce798682e0c50ce9188811a499f980e": {
+    "query": "SELECT * FROM games ORDER BY id DESC LIMIT $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 1,
+          "name": "state",
+          "type_info": "Jsonb"
+        },
+        {
+          "ordinal": 2,
+          "name": "scenario",
+          "type_info": "Jsonb"
+        }
       ],
       "parameters": {
         "Left": [
           "Int8"
         ]
-      }
-    },
-    "query": "SELECT * FROM games ORDER BY id DESC LIMIT $1"
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
   },
-  "33240f2b8bceecaadac06b3b58b2af24200fda1fd96ab7aa892ad7734e096cec": {
+  "39d160438499699f4994eadf67bc88f21f51cd99e4de964f360be1c2c55f3399": {
+    "query": "INSERT INTO games (scenario, state) values ($1, $2) RETURNING id",
     "describe": {
       "columns": [
         {
-          "name": "id",
           "ordinal": 0,
+          "name": "id",
           "type_info": "Uuid"
-        },
-        {
-          "name": "state",
-          "ordinal": 1,
-          "type_info": "Jsonb"
         }
-      ],
-      "nullable": [
-        false,
-        false
       ],
       "parameters": {
         "Left": [
+          "Jsonb",
           "Jsonb"
         ]
-      }
-    },
-    "query": "INSERT INTO games (scenario) values ($1) RETURNING id, state"
+      },
+      "nullable": [
+        false
+      ]
+    }
   },
   "658cd8c29db79f00cf16487533f574820ec16f12fec3c6dee242694f86c26968": {
+    "query": "SELECT count(id) FROM games",
     "describe": {
       "columns": [
         {
-          "name": "count",
           "ordinal": 0,
+          "name": "count",
           "type_info": "Int8"
         }
       ],
-      "nullable": [
-        null
-      ],
       "parameters": {
         "Left": []
-      }
-    },
-    "query": "SELECT count(id) FROM games"
+      },
+      "nullable": [
+        null
+      ]
+    }
   },
   "6a97dc0c93c4159e2fa7058964cba9468321f27bcb3196a2b480d782332d4924": {
+    "query": "SELECT * FROM games WHERE id = $1",
     "describe": {
       "columns": [
         {
-          "name": "id",
           "ordinal": 0,
+          "name": "id",
           "type_info": "Uuid"
         },
         {
-          "name": "state",
           "ordinal": 1,
+          "name": "state",
           "type_info": "Jsonb"
         },
         {
-          "name": "scenario",
           "ordinal": 2,
+          "name": "scenario",
           "type_info": "Jsonb"
         }
-      ],
-      "nullable": [
-        false,
-        false,
-        false
       ],
       "parameters": {
         "Left": [
           "Uuid"
         ]
-      }
-    },
-    "query": "SELECT * FROM games WHERE id = $1"
-  },
-  "6b1e6455e31af510b29c0e14f9c8a104fb4f73d13ae67349de0a221c2f3250ba": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "state",
-          "ordinal": 1,
-          "type_info": "Jsonb"
-        },
-        {
-          "name": "scenario",
-          "ordinal": 2,
-          "type_info": "Jsonb"
-        }
-      ],
+      },
       "nullable": [
         false,
         false,
         false
+      ]
+    }
+  },
+  "6b1e6455e31af510b29c0e14f9c8a104fb4f73d13ae67349de0a221c2f3250ba": {
+    "query": "SELECT * FROM games WHERE id > $1 ORDER BY id DESC LIMIT $2",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 1,
+          "name": "state",
+          "type_info": "Jsonb"
+        },
+        {
+          "ordinal": 2,
+          "name": "scenario",
+          "type_info": "Jsonb"
+        }
       ],
       "parameters": {
         "Left": [
           "Uuid",
           "Int8"
         ]
-      }
-    },
-    "query": "SELECT * FROM games WHERE id > $1 ORDER BY id DESC LIMIT $2"
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
   },
   "a9a49c2cb33251c9042b62caae89fbe36915167bcbcfac5f281d77234f85419b": {
+    "query": "SELECT EXISTS (SELECT 1 FROM games WHERE id < $1)",
     "describe": {
       "columns": [
         {
-          "name": "exists",
           "ordinal": 0,
+          "name": "exists",
           "type_info": "Bool"
         }
-      ],
-      "nullable": [
-        null
       ],
       "parameters": {
         "Left": [
           "Uuid"
         ]
-      }
-    },
-    "query": "SELECT EXISTS (SELECT 1 FROM games WHERE id < $1)"
+      },
+      "nullable": [
+        null
+      ]
+    }
   },
   "b91c22b6ac289754ff5840413b0d475d6b1fce97914abe300875f9b8e9d7b46c": {
+    "query": "UPDATE games SET state = $1 WHERE id = $2",
     "describe": {
       "columns": [],
-      "nullable": [],
       "parameters": {
         "Left": [
           "Jsonb",
           "Uuid"
         ]
-      }
-    },
-    "query": "UPDATE games SET state = $1 WHERE id = $2"
+      },
+      "nullable": []
+    }
   },
   "eeb79cf9962c89f2354de584ce6aff81562d130807bd8e69591f22ec5511d89b": {
+    "query": "SELECT EXISTS (SELECT 1 FROM games WHERE id > $1)",
     "describe": {
       "columns": [
         {
-          "name": "exists",
           "ordinal": 0,
+          "name": "exists",
           "type_info": "Bool"
         }
-      ],
-      "nullable": [
-        null
       ],
       "parameters": {
         "Left": [
           "Uuid"
         ]
-      }
-    },
-    "query": "SELECT EXISTS (SELECT 1 FROM games WHERE id > $1)"
+      },
+      "nullable": [
+        null
+      ]
+    }
   },
   "f76f1f20229b3915a77996dd37c62446ce3ab507154e1bb9c1b00da9f10046a5": {
+    "query": "SELECT * FROM games ORDER BY id ASC LIMIT $1",
     "describe": {
       "columns": [
         {
-          "name": "id",
           "ordinal": 0,
+          "name": "id",
           "type_info": "Uuid"
         },
         {
-          "name": "state",
           "ordinal": 1,
+          "name": "state",
           "type_info": "Jsonb"
         },
         {
-          "name": "scenario",
           "ordinal": 2,
+          "name": "scenario",
           "type_info": "Jsonb"
         }
-      ],
-      "nullable": [
-        false,
-        false,
-        false
       ],
       "parameters": {
         "Left": [
           "Int8"
         ]
-      }
-    },
-    "query": "SELECT * FROM games ORDER BY id ASC LIMIT $1"
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
   }
 }
