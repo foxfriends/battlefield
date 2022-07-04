@@ -14,7 +14,7 @@ pub struct Context {
 impl Context {
     pub(super) fn new(scenario: Scenario) -> Self {
         Self {
-            scenario: scenario,
+            scenario,
             current_module: "*".to_owned(),
             commands: vec![],
         }
