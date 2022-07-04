@@ -34,11 +34,11 @@ impl State {
         }
     }
 
-    pub fn set_data(&mut self, key: String, value: Dynamic) {
+    pub(crate) fn set_data(&mut self, key: String, value: Dynamic) {
         self.data.insert(key, serde_json::to_value(&value).unwrap());
     }
 
-    pub fn get_data(&mut self, key: String) -> Dynamic {
+    pub(crate) fn get_data(&mut self, key: String) -> Dynamic {
         match self.data.get(&key) {
             Some(value) => rhai::serde::to_dynamic(value).unwrap(),
             None => rhai::Dynamic::UNIT,

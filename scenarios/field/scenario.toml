@@ -4,3 +4,4 @@ description = "A wide open field with nowhere to hide."
 
 [modules]
 core = "0.0.1"
+setup_preset = "0.0.1"
