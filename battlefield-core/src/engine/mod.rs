@@ -1,16 +1,17 @@
 use crate::data::{self, ModuleId};
-use crate::State;
 
 mod builder;
 mod map;
 mod module;
 mod runtime;
 mod scenario;
+mod state;
 
 pub use builder::EngineBuilder;
 pub use map::Map;
 pub use module::Module;
 pub use scenario::{Scenario, ScenarioError};
+pub use state::State;
 
 #[derive(Default)]
 pub struct Engine {

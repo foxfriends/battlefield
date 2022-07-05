@@ -1,13 +1,14 @@
-use crate::data;
-use crate::{Command, Error, ErrorKind};
+use crate::{data, Command, Error, ErrorKind};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 mod context;
+mod entity;
 mod state;
 
 use context::{Context, CONTEXT_MODULE};
-use state::{State, STATE_MODULE};
+use entity::{Entity, ENTITY_MODULE};
+use state::STATE_MODULE;
 
 impl super::Engine {
     fn construct_engine<'a>(
@@ -17,6 +18,7 @@ impl super::Engine {
         let mut engine = rhai::Engine::new();
         engine.register_global_module(CONTEXT_MODULE.clone());
         engine.register_global_module(STATE_MODULE.clone());
+        engine.register_global_module(ENTITY_MODULE.clone());
 
         let required_modules: HashMap<_, _> = scenario
             .modules()
@@ -59,11 +61,11 @@ impl super::Engine {
     pub fn commands(
         &self,
         scenario: &data::Scenario,
-        state: &crate::State,
+        state: &super::State,
     ) -> crate::Result<Vec<Command>> {
         let mut scope = rhai::Scope::new();
         let context = Arc::new(Mutex::new(Context::new(scenario.clone())));
-        let state = Arc::new(Mutex::new(State::new(state.clone())));
+        let state = Arc::new(Mutex::new(state.clone()));
         scope.push_constant("state", state);
         scope.push_constant("context", context.clone());
         let (engine, modules) = self.construct_engine(scenario)?;
@@ -85,11 +87,11 @@ impl super::Engine {
     pub(super) fn runtime_init(
         &self,
         scenario: &data::Scenario,
-        state: crate::State,
-    ) -> crate::Result<crate::State> {
+        state: super::State,
+    ) -> crate::Result<super::State> {
         let mut scope = rhai::Scope::new();
         let context = Arc::new(Mutex::new(Context::new(scenario.clone())));
-        let state = Arc::new(Mutex::new(State::new(state)));
+        let state = Arc::new(Mutex::new(state));
         scope.push_constant("state", state.clone());
         scope.push_constant("context", context.clone());
         let (engine, modules) = self.construct_engine(scenario)?;
@@ -101,22 +103,18 @@ impl super::Engine {
             )?;
         }
         std::mem::drop(scope);
-        Ok(Arc::try_unwrap(state)
-            .unwrap()
-            .into_inner()
-            .unwrap()
-            .into_inner())
+        Ok(Arc::try_unwrap(state).unwrap().into_inner().unwrap())
     }
 
     pub fn perform(
         &self,
         command: Command,
         scenario: &data::Scenario,
-        state: &crate::State,
-    ) -> crate::Result<crate::State> {
+        state: &super::State,
+    ) -> crate::Result<super::State> {
         let mut scope = rhai::Scope::new();
         let context = Arc::new(Mutex::new(Context::new(scenario.clone())));
-        let state = Arc::new(Mutex::new(State::new(state.clone())));
+        let state = Arc::new(Mutex::new(state.clone()));
         scope.push_constant("command", command.0);
         scope.push_constant("state", state.clone());
         scope.push_constant("context", context.clone());
@@ -129,10 +127,6 @@ impl super::Engine {
             )?;
         }
         std::mem::drop(scope);
-        Ok(Arc::try_unwrap(state)
-            .unwrap()
-            .into_inner()
-            .unwrap()
-            .into_inner())
+        Ok(Arc::try_unwrap(state).unwrap().into_inner().unwrap())
     }
 }
