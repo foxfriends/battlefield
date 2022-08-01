@@ -4,7 +4,7 @@ use toml::Value;
 pub(crate) fn toml_to_rhai(toml: &Value) -> Dynamic {
     match toml {
         Value::Array(array) => array
-            .into_iter()
+            .iter()
             .map(toml_to_rhai)
             .collect::<Array>()
             .into(),
@@ -14,7 +14,7 @@ pub(crate) fn toml_to_rhai(toml: &Value) -> Dynamic {
         Value::Integer(val) => Dynamic::from(*val),
         Value::String(val) => Dynamic::from(val.clone()),
         Value::Table(val) => val
-            .into_iter()
+            .iter()
             .map(|(k, v)| (From::from(k), toml_to_rhai(v)))
             .collect::<Map>()
             .into(),

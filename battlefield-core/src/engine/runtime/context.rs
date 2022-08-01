@@ -58,6 +58,6 @@ mod plugin_context {
             .config
             .get(index)
             .map(toml_to_rhai)
-            .unwrap_or(Dynamic::from(()))
+            .unwrap_or_else(|| Dynamic::from(()))
     }
 }
