@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 lazy_static = "1.4.0"
 log = "0.4"
-rhai = { version = "1.7", features = ["sync", "serde"] }
+rhai = { version = "1.7", features = ["sync", "serde", "unchecked"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 toml = "0.5"

@@ -7,4 +7,9 @@ core = "0.0.1"
 
 [modules.setup_preset]
 version = "0.0.1"
-config = {hello = "world"}
+
+[modules.setup_preset.config]
+entities = [
+    { "core.position" = [0, 0], "core.health" = 10, "core.attack" = 2, "core.defense" = 0, "core.crit_chance" = 10 },
+    { "core.position" = [9, 9], "core.health" = 10, "core.attack" = 2, "core.defense" = 0, "core.crit_chance" = 10 },
+]

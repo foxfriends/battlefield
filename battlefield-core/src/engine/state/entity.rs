@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use super::ComponentType;
-
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
 #[serde(transparent)]
 pub(crate) struct EntityId(u64);
@@ -20,7 +18,7 @@ impl EntityId {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct Entity {
     pub(crate) id: EntityId,
-    pub(crate) components: HashMap<ComponentType, rhai::Dynamic>,
+    pub(crate) components: HashMap<String, rhai::Dynamic>,
 }
 
 impl Entity {

@@ -4,10 +4,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 
-mod component;
 mod entity;
 
-pub(crate) use component::ComponentType;
 pub(crate) use entity::{Entity, EntityId};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]

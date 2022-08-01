@@ -1,7 +1,7 @@
 use rhai::plugin::*;
 use std::sync::{Arc, Mutex};
 
-use crate::engine::state::{ComponentType, EntityId};
+use crate::engine::state::EntityId;
 
 #[derive(Clone, Debug)]
 pub struct Entity {
@@ -21,20 +21,15 @@ lazy_static::lazy_static! {
 
 #[export_module]
 mod plugin_entity {
-    pub type ComponentType = super::ComponentType;
     pub type Entity = super::Entity;
 
-    pub fn create_component(name: String) -> ComponentType {
-        ComponentType::new(name)
-    }
-
-    pub fn set_component(entity: &mut Entity, name: ComponentType, value: rhai::Dynamic) {
+    pub fn set_component(entity: &mut Entity, name: String, value: rhai::Dynamic) {
         let mut state = entity.state.lock().unwrap();
         let entity = state.entity_mut(entity.id).unwrap();
         entity.components.insert(name, value);
     }
 
-    pub fn get_component(entity: &mut Entity, name: ComponentType) -> rhai::Dynamic {
+    pub fn get_component(entity: &mut Entity, name: String) -> rhai::Dynamic {
         let state = entity.state.lock().unwrap();
         let entity = state.entity(entity.id).unwrap();
         entity
