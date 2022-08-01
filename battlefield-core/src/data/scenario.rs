@@ -25,4 +25,8 @@ impl Scenario {
             .iter()
             .map(|(name, config)| (name.as_str(), config))
     }
+
+    pub fn module(&self, module: &str) -> Option<&ModuleConfig> {
+        self.modules.get(module)
+    }
 }

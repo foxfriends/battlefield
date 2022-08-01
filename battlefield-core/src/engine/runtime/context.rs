@@ -35,5 +35,29 @@ lazy_static::lazy_static! {
 
 #[export_module]
 mod plugin_context {
+    use crate::util::toml_to_rhai::toml_to_rhai;
+
     pub type Context = Arc<Mutex<super::Context>>;
+    pub type Config = crate::data::ModuleConfig;
+
+    #[rhai_fn(get = "module", pure)]
+    pub fn get_module(context: &mut Context) -> String {
+        context.lock().unwrap().current_module.clone()
+    }
+
+    #[rhai_fn(get = "config", pure)]
+    pub fn get_config(context: &mut Context) -> Config {
+        let context = context.lock().unwrap();
+        let config = context.scenario.module(&context.current_module).unwrap();
+        config.clone()
+    }
+
+    #[rhai_fn(index_get)]
+    pub fn get_config_value(config: &mut Config, index: &str) -> Dynamic {
+        config
+            .config
+            .get(index)
+            .map(toml_to_rhai)
+            .unwrap_or(Dynamic::from(()))
+    }
 }

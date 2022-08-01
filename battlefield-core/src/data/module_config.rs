@@ -20,6 +20,8 @@ impl ModuleConfig {
 pub struct ModuleConfigRepr {
     pub(crate) name: Option<String>,
     pub(crate) version: String,
+    #[serde(default)]
+    pub(crate) config: toml::value::Table,
 }
 
 impl ModuleConfig {
@@ -35,7 +37,7 @@ impl ModuleConfig {
         Self {
             name: repr.name.unwrap_or_else(|| name.to_owned()),
             version: repr.version,
-            config: Default::default(),
+            config: repr.config,
         }
     }
 }

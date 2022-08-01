@@ -1,5 +1,5 @@
 fn init(context, state) {
-    state.set_state("phase", "setup_preset");
+    print(context.config["hello"])
 }
 
 fn commands(context, state) { [] }
