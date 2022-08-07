@@ -1,9 +1,17 @@
 fn init(context, state) {
+    let archetypes = context.config["archetypes"];
     let entities = context.config["entities"];
-    for entity_definition in entities {
+    for definition in entities {
         let entity = state.spawn_entity();
-        for component in entity_definition.keys() {
-            entity.set_component(component, entity_definition[component]);
+
+        if definition.archetype != () {
+            let archetype = archetypes[definition.archetype];
+            for component in archetype.keys() {
+                entity.set_component(component, archetype[component]);
+            }
+        }
+        for component in definition.components.keys() {
+            entity.set_component(component, definition.components[component]);
         }
     }
 }
