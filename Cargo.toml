@@ -2,4 +2,5 @@
 members = [
     "battlefield-core",
     "battlefield-server",
+    "battlefield-web",
 ]
