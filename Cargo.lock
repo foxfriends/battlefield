@@ -379,8 +379,10 @@ version = "0.1.0"
 dependencies = [
  "futures",
  "gloo 0.8.0",
+ "js-sys",
  "serde",
  "serde_json",
+ "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
  "yew",
