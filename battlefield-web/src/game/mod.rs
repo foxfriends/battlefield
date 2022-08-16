@@ -18,8 +18,7 @@ pub fn game() -> Html {
             ctx.set_fill_style(&JsValue::from_str("black"));
             ctx.set_font("12pt sans-serif");
             ctx.set_text_baseline("top");
-            ctx.fill_text("Hello World from Canvas", 0.0, 0.0)
-                .unwrap();
+            ctx.fill_text("Hello World from Canvas", 0.0, 0.0).unwrap();
         },
         ctx,
     );
