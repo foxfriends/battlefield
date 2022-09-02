@@ -1,18 +1,19 @@
 use yew::prelude::*;
+use yew_router::prelude::*;
 
 mod components;
 mod game;
 mod hooks;
+mod pages;
 
-use components::canvas_2d::Canvas2d;
-use game::Game;
+use pages::{switch, Route};
 
 #[function_component(App)]
 fn app() -> Html {
     html! {
-        <Canvas2d>
-            <Game />
-        </Canvas2d>
+        <BrowserRouter>
+            <Switch<Route> render={Switch::render(switch)} />
+        </BrowserRouter>
     }
 }
 
