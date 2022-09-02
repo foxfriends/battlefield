@@ -1,4 +1,5 @@
 use crate::components::canvas_2d::Canvas2d;
+use crate::components::game_socket_provider::GameSocketProvider;
 use crate::game::Game;
 use yew::prelude::*;
 
@@ -10,8 +11,10 @@ pub struct Props {
 #[function_component(NewGamePage)]
 pub fn new_game_page(props: &Props) -> Html {
     html! {
-        <Canvas2d>
-            <Game />
-        </Canvas2d>
+        <GameSocketProvider url={format!("ws://localhost:8080/ws/new/{}", props.scenario)}>
+            <Canvas2d>
+                <Game />
+            </Canvas2d>
+        </GameSocketProvider>
     }
 }
