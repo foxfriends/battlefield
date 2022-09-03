@@ -13,9 +13,9 @@ pub fn game() -> Html {
 
     use_effect_with_deps(
         |socket| {
-            let callback = Rc::new(|notification: &Notification| {
+            let callback = Rc::new(Box::new(|notification: &Notification| {
                 gloo::console::log!(JsValue::from_serde(notification).unwrap());
-            });
+            }) as Box<dyn Fn(&Notification)>);
             let subscription = socket.subscribe(callback);
             move || std::mem::drop(subscription)
         },

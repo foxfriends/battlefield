@@ -52,12 +52,12 @@ impl State {
     }
 }
 
-impl Into<api::State> for State {
-    fn into(self) -> api::State {
-        api::State {
-            entities: self.entities.into_iter().map(Into::into).collect(),
-            map: self.map,
-            data: self
+impl From<State> for api::State {
+    fn from(state: State) -> Self {
+        Self {
+            entities: state.entities.into_iter().map(Into::into).collect(),
+            map: state.map,
+            data: state
                 .data
                 .into_iter()
                 .map(|(k, v)| {

@@ -20,7 +20,7 @@ impl Notification {
     }
     pub fn update(patch: Patch, commands: Vec<Command>) -> Self {
         Self(api::Notification::Update {
-            patch: patch.clone(),
+            patch,
             commands: commands.into_iter().map(Into::into).collect(),
         })
     }

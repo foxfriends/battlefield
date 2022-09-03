@@ -31,11 +31,11 @@ impl Entity {
     }
 }
 
-impl Into<api::Entity> for Entity {
-    fn into(self) -> api::Entity {
-        api::Entity {
-            id: api::EntityId(self.id.0),
-            components: self
+impl From<Entity> for api::Entity {
+    fn from(entity: Entity) -> Self {
+        Self {
+            id: api::EntityId(entity.id.0),
+            components: entity
                 .components
                 .into_iter()
                 .map(|(k, v)| {

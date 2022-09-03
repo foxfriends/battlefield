@@ -10,7 +10,7 @@ use game::GamePage;
 use menu::MenuPage;
 use new_game::NewGamePage;
 
-#[derive(Clone, Routable, PartialEq)]
+#[derive(Clone, Routable, PartialEq, Eq)]
 pub enum Route {
     #[at("/")]
     Menu,

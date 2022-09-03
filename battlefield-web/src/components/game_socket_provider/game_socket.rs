@@ -8,7 +8,8 @@ use std::future::ready;
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
 
-type Callbacks = Rc<RefCell<Vec<Rc<dyn Fn(&Notification)>>>>;
+type Callback = Rc<Box<dyn Fn(&Notification)>>;
+type Callbacks = Rc<RefCell<Vec<Callback>>>;
 
 #[derive(Clone)]
 pub struct GameSocket {
@@ -17,7 +18,7 @@ pub struct GameSocket {
 }
 
 pub struct Subscription {
-    callback: Rc<dyn Fn(&Notification)>,
+    callback: Callback,
     callbacks: Callbacks,
 }
 
@@ -63,10 +64,11 @@ impl GameSocket {
     }
 
     pub async fn send(&self, message: Message) {
-        self.sender.borrow_mut().send(message).await.ok();
+        let mut sender = self.sender.borrow_mut();
+        sender.send(message).await.ok();
     }
 
-    pub fn subscribe(&self, callback: Rc<dyn Fn(&Notification)>) -> Subscription {
+    pub fn subscribe(&self, callback: Callback) -> Subscription {
         let callbacks = self.callbacks.clone();
         callbacks.borrow_mut().push(callback.clone());
         Subscription {

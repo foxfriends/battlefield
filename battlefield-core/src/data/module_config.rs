@@ -66,12 +66,12 @@ where
         .collect())
 }
 
-impl Into<api::Module> for ModuleConfig {
-    fn into(self) -> api::Module {
-        api::Module {
-            name: self.name,
-            version: self.version,
-            config: serde_json::from_str(&serde_json::to_string(&self.config).unwrap()).unwrap(),
+impl From<ModuleConfig> for api::Module {
+    fn from(module: ModuleConfig) -> Self {
+        Self {
+            name: module.name,
+            version: module.version,
+            config: serde_json::from_str(&serde_json::to_string(&module.config).unwrap()).unwrap(),
         }
     }
 }

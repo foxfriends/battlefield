@@ -4,7 +4,7 @@ use crate::game::Game;
 use uuid::Uuid;
 use yew::prelude::*;
 
-#[derive(Clone, PartialEq, Properties)]
+#[derive(Clone, Eq, PartialEq, Properties)]
 pub struct Props {
     pub id: Uuid,
 }

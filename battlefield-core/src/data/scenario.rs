@@ -32,13 +32,13 @@ impl Scenario {
     }
 }
 
-impl Into<api::Scenario> for Scenario {
-    fn into(self) -> api::Scenario {
-        api::Scenario {
-            name: self.name,
-            description: self.description,
-            map: self.map,
-            modules: self
+impl From<Scenario> for api::Scenario {
+    fn from(scenario: Scenario) -> Self {
+        Self {
+            name: scenario.name,
+            description: scenario.description,
+            map: scenario.map,
+            modules: scenario
                 .modules
                 .into_iter()
                 .map(|(k, v)| (k, v.into()))
