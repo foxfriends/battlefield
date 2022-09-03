@@ -1,11 +1,25 @@
 use crate::components::context_2d_provider::use_context_2d;
+use crate::components::game_socket_provider::use_game_socket;
 use crate::hooks::use_animation_frame::use_animation_frame;
+use gloo::net::websocket::Message;
+use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use yew::prelude::*;
 
 #[function_component(Game)]
 pub fn game() -> Html {
     let ctx = use_context_2d();
+    let socket = use_game_socket();
+
+    use_effect_with_deps(
+        |socket| {
+            let callback =
+                Rc::new(|message: &Message| gloo::console::log!(format!("{:?}", message)));
+            let subscription = socket.subscribe(callback);
+            move || std::mem::drop(subscription)
+        },
+        socket,
+    );
 
     use_animation_frame(
         move |_, ctx| {

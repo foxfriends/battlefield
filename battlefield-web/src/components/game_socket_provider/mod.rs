@@ -25,3 +25,7 @@ pub fn game_socket_provider(props: &Props) -> Html {
         </ContextProvider<GameSocket>>
     }
 }
+
+pub fn use_game_socket() -> GameSocket {
+    use_context::<GameSocket>().unwrap()
+}
