@@ -20,7 +20,7 @@ impl Handler<Sync> for SocketHandler {
                 .map_err(Notification::error)
                 .and_then(|commands| commands.map_err(Notification::error));
             let notification = match commands {
-                Ok(commands) => Notification::Sync { state, commands },
+                Ok(commands) => Notification::sync(state, commands),
                 Err(error) => error,
             };
             socket.do_send(notification);

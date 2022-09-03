@@ -1,4 +1,5 @@
 use crate::Map;
+use battlefield_api as api;
 use rhai::Dynamic;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -48,5 +49,24 @@ impl State {
 
     pub(crate) fn entity(&self, id: EntityId) -> Option<&Entity> {
         self.entities.iter().find(|entity| entity.id == id)
+    }
+}
+
+impl Into<api::State> for State {
+    fn into(self) -> api::State {
+        api::State {
+            entities: self.entities.into_iter().map(Into::into).collect(),
+            map: self.map,
+            data: self
+                .data
+                .into_iter()
+                .map(|(k, v)| {
+                    (
+                        k,
+                        serde_json::from_str(&serde_json::to_string(&v).unwrap()).unwrap(),
+                    )
+                })
+                .collect(),
+        }
     }
 }

@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "battlefield-core",
+    "battlefield-api",
     "battlefield-server",
     "battlefield-web",
 ]

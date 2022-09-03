@@ -1,4 +1,5 @@
 use super::{module_map, ModuleConfig};
+use battlefield_api as api;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -28,5 +29,20 @@ impl Scenario {
 
     pub fn module(&self, module: &str) -> Option<&ModuleConfig> {
         self.modules.get(module)
+    }
+}
+
+impl Into<api::Scenario> for Scenario {
+    fn into(self) -> api::Scenario {
+        api::Scenario {
+            name: self.name,
+            description: self.description,
+            map: self.map,
+            modules: self
+                .modules
+                .into_iter()
+                .map(|(k, v)| (k, v.into()))
+                .collect(),
+        }
     }
 }

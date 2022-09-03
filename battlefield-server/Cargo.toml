@@ -28,4 +28,5 @@ tokio = { version = "1.17.0", features = ["fs", "sync"] }
 toml = "0.5.9"
 uuid = { version = "0.8.2", features = ["serde"] }
 
-battlefield-core = { path = "../battlefield-core" }
+battlefield-core = { path = "../battlefield-core/" }
+battlefield-api = { path = "../battlefield-api/" }

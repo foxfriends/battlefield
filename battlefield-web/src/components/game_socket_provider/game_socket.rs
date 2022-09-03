@@ -1,3 +1,4 @@
+use battlefield_api::websocket::Notification;
 use futures::stream::SplitSink;
 use futures::{SinkExt, StreamExt};
 use gloo::net::websocket::futures::WebSocket;
@@ -7,7 +8,7 @@ use std::future::ready;
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
 
-type Callbacks = Rc<RefCell<Vec<Rc<dyn Fn(&Message)>>>>;
+type Callbacks = Rc<RefCell<Vec<Rc<dyn Fn(&Notification)>>>>;
 
 #[derive(Clone)]
 pub struct GameSocket {
@@ -16,7 +17,7 @@ pub struct GameSocket {
 }
 
 pub struct Subscription {
-    callback: Rc<dyn Fn(&Message)>,
+    callback: Rc<dyn Fn(&Notification)>,
     callbacks: Callbacks,
 }
 
@@ -38,11 +39,17 @@ impl GameSocket {
             let callbacks = callbacks.clone();
             recv.for_each(move |message| {
                 match message {
-                    Ok(message) => {
-                        for callback in &*callbacks.borrow() {
-                            callback(&message);
+                    Ok(Message::Text(json)) => match serde_json::from_str(&json) {
+                        Ok(notification) => {
+                            for callback in &*callbacks.borrow() {
+                                callback(&notification);
+                            }
                         }
-                    }
+                        Err(error) => {
+                            gloo::console::error!(format!("{:?}", error));
+                        }
+                    },
+                    Ok(Message::Bytes(..)) => {}
                     Err(WebSocketError::ConnectionClose(..)) => {}
                     Err(error) => {
                         gloo::console::error!(format!("{:?}", error));
@@ -59,7 +66,7 @@ impl GameSocket {
         self.sender.borrow_mut().send(message).await.ok();
     }
 
-    pub fn subscribe(&self, callback: Rc<dyn Fn(&Message)>) -> Subscription {
+    pub fn subscribe(&self, callback: Rc<dyn Fn(&Notification)>) -> Subscription {
         let callbacks = self.callbacks.clone();
         callbacks.borrow_mut().push(callback.clone());
         Subscription {

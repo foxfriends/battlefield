@@ -1,3 +1,4 @@
+use battlefield_api as api;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -26,6 +27,24 @@ impl Entity {
         Self {
             id,
             components: Default::default(),
+        }
+    }
+}
+
+impl Into<api::Entity> for Entity {
+    fn into(self) -> api::Entity {
+        api::Entity {
+            id: api::EntityId(self.id.0),
+            components: self
+                .components
+                .into_iter()
+                .map(|(k, v)| {
+                    (
+                        k,
+                        serde_json::from_str(&serde_json::to_string(&v).unwrap()).unwrap(),
+                    )
+                })
+                .collect(),
         }
     }
 }

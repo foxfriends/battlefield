@@ -1,4 +1,5 @@
 use super::ModuleId;
+use battlefield_api as api;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 
@@ -63,4 +64,14 @@ where
             (name, config)
         })
         .collect())
+}
+
+impl Into<api::Module> for ModuleConfig {
+    fn into(self) -> api::Module {
+        api::Module {
+            name: self.name,
+            version: self.version,
+            config: serde_json::from_str(&serde_json::to_string(&self.config).unwrap()).unwrap(),
+        }
+    }
 }

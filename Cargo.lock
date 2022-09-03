@@ -336,9 +336,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 
 [[package]]
+name = "battlefield-api"
+version = "0.1.0"
+dependencies = [
+ "json-patch",
+ "serde",
+ "serde_json",
+ "toml",
+ "uuid 0.8.2",
+]
+
+[[package]]
 name = "battlefield-core"
 version = "0.1.0"
 dependencies = [
+ "battlefield-api",
  "lazy_static",
  "log",
  "rhai",
@@ -356,6 +368,7 @@ dependencies = [
  "actix-web-actors",
  "anyhow",
  "async-trait",
+ "battlefield-api",
  "battlefield-core",
  "bytestring",
  "dotenv",
@@ -377,6 +390,7 @@ dependencies = [
 name = "battlefield-web"
 version = "0.1.0"
 dependencies = [
+ "battlefield-api",
  "futures",
  "gloo 0.8.0",
  "js-sys",

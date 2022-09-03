@@ -1,7 +1,7 @@
 use crate::components::context_2d_provider::use_context_2d;
 use crate::components::game_socket_provider::use_game_socket;
 use crate::hooks::use_animation_frame::use_animation_frame;
-use gloo::net::websocket::Message;
+use battlefield_api::websocket::Notification;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use yew::prelude::*;
@@ -13,8 +13,9 @@ pub fn game() -> Html {
 
     use_effect_with_deps(
         |socket| {
-            let callback =
-                Rc::new(|message: &Message| gloo::console::log!(format!("{:?}", message)));
+            let callback = Rc::new(|notification: &Notification| {
+                gloo::console::log!(JsValue::from_serde(notification).unwrap());
+            });
             let subscription = socket.subscribe(callback);
             move || std::mem::drop(subscription)
         },

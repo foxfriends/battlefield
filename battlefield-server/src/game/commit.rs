@@ -23,10 +23,7 @@ impl Handler<Commit> for Game {
         };
         for subscriber in &self.subscribers {
             if let Some(addr) = subscriber.upgrade() {
-                addr.do_send(Notification::Update {
-                    patch: patch.clone(),
-                    commands: commands.clone(),
-                });
+                addr.do_send(Notification::update(patch.clone(), commands.clone()));
             }
         }
         MessageResult(Ok(()))

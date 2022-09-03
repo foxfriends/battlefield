@@ -6,7 +6,7 @@ mod handler;
 
 use connect::connect;
 use create::create;
-pub use handler::{Notification, SocketHandler};
+pub(crate) use handler::{Notification, SocketHandler};
 
 pub fn configure(config: &mut ServiceConfig) {
     config

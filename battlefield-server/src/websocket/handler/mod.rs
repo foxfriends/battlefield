@@ -8,7 +8,7 @@ mod command;
 mod notification;
 mod sync;
 
-pub use notification::Notification;
+pub(crate) use notification::Notification;
 
 use command::Command;
 use sync::Sync;
@@ -59,12 +59,7 @@ impl Actor for SocketHandler {
                     return;
                 }
             };
-            socket.do_send(Notification::Init {
-                id: game_id,
-                scenario,
-                state,
-                commands,
-            });
+            socket.do_send(Notification::init(game_id, scenario, state, commands));
         };
         future.into_actor(self).spawn(ctx);
     }
