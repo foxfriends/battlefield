@@ -8,6 +8,7 @@ lazy_static::lazy_static! {
 
 pub type State = Arc<Mutex<crate::State>>;
 
+#[allow(clippy::mut_mutex_lock)]
 #[export_module]
 mod plugin_state {
     pub type State = super::State;

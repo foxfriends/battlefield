@@ -33,6 +33,7 @@ lazy_static::lazy_static! {
     pub(crate) static ref CONTEXT_MODULE: rhai::Shared<rhai::Module> = rhai::Shared::new(rhai::exported_module!(plugin_context));
 }
 
+#[allow(clippy::mut_mutex_lock)]
 #[export_module]
 mod plugin_context {
     use crate::util::toml_to_rhai::toml_to_rhai;
