@@ -11,6 +11,7 @@ pub fn game() -> Html {
     let ctx = use_context_2d();
     let socket = use_game_socket();
 
+    #[cfg(debug_assertions)]
     use_effect_with_deps(
         |socket| {
             let callback = Rc::new(Box::new(|notification: &Notification| {

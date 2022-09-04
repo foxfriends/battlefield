@@ -1,3 +1,9 @@
+[watch]
+watch = ["../battlefield-core/", "../battlefield-api/"]
+
+[serve]
+port = 3000
+
 [[hooks]]
 stage = "pre_build"
 command = "npx"

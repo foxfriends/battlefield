@@ -1,0 +1,3 @@
+#!/bin/bash
+pushd ../battlefield-server
+cargo run --bin print-schema > ../battlefield-web/src/api/battlefield_server.graphql

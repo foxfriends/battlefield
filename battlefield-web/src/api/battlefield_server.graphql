@@ -1,0 +1,98 @@
+type ScenariosConnection {
+  totalCount: Int!
+  edges: [ScenarioEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ModulesConnection {
+  totalCount: Int!
+  edges: [ModuleEdge!]!
+  pageInfo: PageInfo!
+}
+
+type MapsConnection {
+  totalCount: Int!
+  edges: [ModuleEdge!]!
+  pageInfo: PageInfo!
+}
+
+type GameEdge {
+  node: Game!
+  cursor: Cursor!
+}
+
+type GamesConnection {
+  totalCount: Int!
+  edges: [GameEdge!]!
+  pageInfo: PageInfo!
+}
+
+type Map {
+  path: String!
+  name: String
+  isValid: Boolean!
+  errors: [String!]!
+}
+
+type Game {
+  id: String!
+  commands: [Json!]!
+  simulate(command: Json!): Json!
+  scenario: Json!
+  state: Json!
+  live: LiveGame
+}
+
+type LiveGame {
+  id: String!
+  scenario: Json!
+  state: Json!
+  commands: [Json!]!
+}
+
+type ScenarioEdge {
+  node: Scenario!
+  cursor: Cursor!
+}
+
+type Scenario {
+  path: String!
+  name: String!
+  isValid: Boolean!
+  description: String
+  errors: [String!]!
+}
+
+scalar Cursor
+
+type ModuleEdge {
+  node: Map!
+  cursor: Cursor!
+}
+
+type Query {
+  "Currently running version of Battlefield server"
+  version: String!
+  "Lists scenarios loaded by this server"
+  scenariosConnection(first: Int, after: Cursor, last: Int, before: Cursor): ScenariosConnection!
+  "Lists scenarios loaded by this server"
+  mapsConnection(first: Int, after: Cursor, last: Int, before: Cursor): MapsConnection!
+  "Lists modules loaded by this server"
+  modulesConnection(first: Int, after: Cursor, last: Int, before: Cursor): ModulesConnection!
+  "Lists games played on this server"
+  gamesConnection(first: Int, after: Cursor, last: Int, before: Cursor): GamesConnection!
+}
+
+scalar Json
+
+type PageInfo {
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+  startCursor: Cursor!
+  endCursor: Cursor!
+}
+
+schema {
+  query: Query
+}
+
