@@ -6,7 +6,7 @@ use std::sync::Arc;
 mod database;
 mod directory;
 mod game;
-mod graphql;
+pub mod graphql;
 mod websocket;
 
 use database::PgPool;

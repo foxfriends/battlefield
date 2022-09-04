@@ -6,9 +6,8 @@ mod query;
 
 use query::Query;
 
-pub(super) type Schema =
-    RootNode<'static, Query, EmptyMutation<Context>, EmptySubscription<Context>>;
+pub type Schema = RootNode<'static, Query, EmptyMutation<Context>, EmptySubscription<Context>>;
 
-pub(super) fn schema() -> Schema {
+pub fn schema() -> Schema {
     Schema::new(Query, EmptyMutation::new(), EmptySubscription::new())
 }

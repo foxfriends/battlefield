@@ -8,7 +8,7 @@ mod schema;
 use context::Context;
 use juniper_actix::{graphql_handler, playground_handler};
 use scalars::Json;
-use schema::{schema, Schema};
+pub use schema::{schema, Schema};
 
 async fn playground() -> actix_web::Result<HttpResponse> {
     playground_handler("/graphql", None).await
