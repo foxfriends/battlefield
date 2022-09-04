@@ -1,19 +1,20 @@
 use crate::components::canvas_2d::Canvas2d;
 use crate::components::game_socket_provider::GameSocketProvider;
-use crate::game::Game;
+use crate::pages::game::GamePage;
+use uuid::Uuid;
 use yew::prelude::*;
 
 #[derive(Clone, Eq, PartialEq, Properties)]
 pub struct Props {
-    pub scenario: String,
+    pub id: Uuid,
 }
 
-#[function_component(NewGamePage)]
-pub fn new_game_page(props: &Props) -> Html {
+#[function_component(Index)]
+pub fn index(props: &Props) -> Html {
     html! {
-        <GameSocketProvider url={format!("ws://localhost:8080/ws/new/{}", props.scenario)}>
+        <GameSocketProvider url={format!("ws://localhost:8080/ws/{}", props.id)}>
             <Canvas2d>
-                <Game />
+                <GamePage />
             </Canvas2d>
         </GameSocketProvider>
     }

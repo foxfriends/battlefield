@@ -5,11 +5,11 @@ use yew_router::prelude::*;
 
 mod api;
 mod components;
-mod game;
 mod hooks;
 mod pages;
+mod routes;
 
-use pages::{switch, Route};
+use routes::{switch, Route};
 
 #[function_component(App)]
 fn app() -> Html {

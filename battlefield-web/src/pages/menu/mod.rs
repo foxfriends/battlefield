@@ -1,8 +1,10 @@
 use crate::api::*;
 use crate::hooks::use_query::use_query;
-use crate::pages::Route;
 use yew::prelude::*;
-use yew_router::prelude::*;
+
+mod scenario_summary;
+
+use scenario_summary::ScenarioSummary;
 
 #[function_component(MenuPage)]
 pub fn menu_page() -> Html {
@@ -22,7 +24,7 @@ pub fn menu_page() -> Html {
     );
 
     html! {
-        <div>
+        <div class="flex flex-col gap-4 p-4">
             {
                 match scenarios.data.as_deref() {
                     Some(Err(error)) => html!{format!("Error: {:?}", error)},
@@ -31,14 +33,7 @@ pub fn menu_page() -> Html {
                             .scenarios_connection
                             .edges
                             .iter()
-                            .map(|edge| {
-                                let name = &edge.node.name;
-                                html! {
-                                    <Link<Route> to={Route::NewGame { scenario: name.to_owned() }}>
-                                        {name}
-                                    </Link<Route>>
-                                }
-                            })
+                            .map(|edge| html! { <ScenarioSummary key={edge.cursor.clone()} scenario={edge.node.clone()} /> })
                             .collect::<Html>()
                     }
                     None => html!{"Loading"}

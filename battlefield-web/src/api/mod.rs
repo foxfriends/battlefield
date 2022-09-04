@@ -3,19 +3,19 @@
     module = "crate::api::schema"
 )]
 mod fragments {
-    #[derive(cynic::QueryFragment, Debug)]
+    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Debug)]
     pub struct ScenariosConnection {
         pub page_info: PageInfo,
         pub edges: Vec<ScenarioEdge>,
     }
 
-    #[derive(cynic::QueryFragment, Debug)]
+    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Debug)]
     pub struct ScenarioEdge {
         pub cursor: Cursor,
         pub node: Scenario,
     }
 
-    #[derive(cynic::QueryFragment, Debug)]
+    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Debug)]
     pub struct Scenario {
         pub description: Option<String>,
         pub errors: Vec<String>,
@@ -24,7 +24,7 @@ mod fragments {
         pub name: String,
     }
 
-    #[derive(cynic::QueryFragment, Debug)]
+    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Debug)]
     pub struct PageInfo {
         pub end_cursor: Cursor,
         pub has_next_page: bool,
@@ -32,8 +32,14 @@ mod fragments {
         pub start_cursor: Cursor,
     }
 
-    #[derive(cynic::Scalar, Debug, Clone)]
+    #[derive(Eq, PartialEq, Hash, cynic::Scalar, Debug, Clone)]
     pub struct Cursor(pub String);
+
+    impl From<Cursor> for yew::virtual_dom::Key {
+        fn from(cursor: Cursor) -> Self {
+            Self::from(cursor.0)
+        }
+    }
 }
 
 #[cynic::schema_for_derives(

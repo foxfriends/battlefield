@@ -6,8 +6,8 @@ use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use yew::prelude::*;
 
-#[function_component(Game)]
-pub fn game() -> Html {
+#[function_component(GamePage)]
+pub fn game_page() -> Html {
     let ctx = use_context_2d();
     let socket = use_game_socket();
 
