@@ -63,6 +63,7 @@ impl GameSocket {
         Self { callbacks, sender }
     }
 
+    #[allow(dead_code, clippy::await_holding_refcell_ref)]
     pub async fn send(&self, message: Message) {
         let mut sender = self.sender.borrow_mut();
         sender.send(message).await.ok();
