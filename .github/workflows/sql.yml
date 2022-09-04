@@ -32,6 +32,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
+          override: true
       - name: Install SQLx
         run: cargo install sqlx-cli --no-default-features --features rustls,postgres
       - name: Create database
@@ -45,7 +46,7 @@ jobs:
         env:
           DATABASE_URL: postgresql://battlefield:battlefield@localhost:5432/battlefield
       - name: Check sqlx-data.json
-        run: cargo sqlx prepare --check -- --lib
+        run: cargo +nightly sqlx prepare --check -- --lib
         working-directory: battlefield-server
         env:
           DATABASE_URL: postgresql://battlefield:battlefield@localhost:5432/battlefield
