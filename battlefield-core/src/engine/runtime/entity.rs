@@ -6,6 +6,7 @@ use crate::engine::state::EntityId;
 #[derive(Clone, Debug)]
 pub struct Entity {
     id: EntityId,
+    // Back reference, so the entity can act on its own
     state: Arc<Mutex<crate::State>>,
 }
 
@@ -37,5 +38,11 @@ mod plugin_entity {
             .get(&name)
             .cloned()
             .unwrap_or(rhai::Dynamic::UNIT)
+    }
+
+    pub fn delete_component(entity: &mut Entity, name: String) {
+        let mut state = entity.state.lock().unwrap();
+        let entity = state.entity_mut(entity.id).unwrap();
+        entity.components.remove(&name);
     }
 }
