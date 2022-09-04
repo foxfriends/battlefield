@@ -15,7 +15,10 @@ pub struct Props {
 #[function_component(GameSocketProvider)]
 pub fn game_socket_provider(props: &Props) -> Html {
     let socket = use_memo(
-        |url| GameSocket::new(WebSocket::open(url).unwrap()),
+        |url| {
+            gloo::console::log!("Connecting to URL:", url);
+            GameSocket::new(WebSocket::open(url).unwrap())
+        },
         props.url.clone(),
     );
 

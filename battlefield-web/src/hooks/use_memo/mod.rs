@@ -1,4 +1,5 @@
-use yew::{use_effect_with_deps, use_state};
+use std::cell::Cell;
+use yew::{use_effect_with_deps, use_ref, use_state};
 
 pub fn use_memo<T, Callback, Dependents>(
     callback: Callback,
@@ -9,12 +10,18 @@ where
     T: 'static,
     Dependents: PartialEq + 'static,
 {
+    let skip = use_ref(|| Cell::new(true));
     let state = use_state(|| callback(&deps));
-    let setter = state.clone();
     use_effect_with_deps(
-        move |deps| {
-            setter.set(callback(deps));
-            || ()
+        {
+            let setter = state.clone();
+            move |deps| {
+                if !skip.get() {
+                    setter.set(callback(deps));
+                }
+                skip.set(false);
+                || ()
+            }
         },
         deps,
     );

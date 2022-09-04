@@ -1,5 +1,4 @@
 use super::context_2d_provider::Context2dProvider;
-use crate::hooks::use_memo::use_memo;
 use web_sys::HtmlCanvasElement;
 use yew::prelude::*;
 
@@ -11,8 +10,15 @@ pub struct Props {
 #[function_component(Canvas2d)]
 pub fn canvas_2d(props: &Props) -> Html {
     let canvas_ref = use_node_ref();
-    let canvas = use_memo(
-        |canvas_ref| canvas_ref.cast::<HtmlCanvasElement>(),
+    let state = use_state(|| None);
+    use_effect_with_deps(
+        {
+            let setter = state.clone();
+            move |canvas_ref: &NodeRef| {
+                setter.set(canvas_ref.cast::<HtmlCanvasElement>());
+                || ()
+            }
+        },
         canvas_ref.clone(),
     );
 
@@ -20,7 +26,7 @@ pub fn canvas_2d(props: &Props) -> Html {
         <div class="relative w-screen h-screen">
             <canvas ref={canvas_ref} class="absolute w-full h-full" />
             <div class="absolute inset-0">
-                <Context2dProvider canvas={canvas.clone()}>
+                <Context2dProvider canvas={(*state).clone()}>
                     {for props.children.iter()}
                 </Context2dProvider>
             </div>
