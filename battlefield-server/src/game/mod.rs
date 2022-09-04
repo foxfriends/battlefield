@@ -27,6 +27,12 @@ pub struct Game {
     engine: Arc<Engine>,
 }
 
+impl From<Game> for database::Game {
+    fn from(actor: Game) -> Self {
+        actor.game
+    }
+}
+
 impl Game {
     pub fn id(&self) -> Uuid {
         self.game.id

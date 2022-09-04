@@ -10,21 +10,13 @@ type ModulesConnection {
   pageInfo: PageInfo!
 }
 
-type MapsConnection {
-  totalCount: Int!
-  edges: [ModuleEdge!]!
-  pageInfo: PageInfo!
-}
-
 type GameEdge {
   node: Game!
   cursor: Cursor!
 }
 
-type GamesConnection {
-  totalCount: Int!
-  edges: [GameEdge!]!
-  pageInfo: PageInfo!
+type Mutation {
+  newGame(newGame: NewGame!): Game!
 }
 
 type Map {
@@ -34,41 +26,12 @@ type Map {
   errors: [String!]!
 }
 
-type Game {
-  id: String!
-  commands: [Json!]!
-  simulate(command: Json!): Json!
-  scenario: Json!
-  state: Json!
-  live: LiveGame
-}
-
-type LiveGame {
-  id: String!
-  scenario: Json!
-  state: Json!
-  commands: [Json!]!
-}
-
 type ScenarioEdge {
   node: Scenario!
   cursor: Cursor!
 }
 
-type Scenario {
-  path: String!
-  name: String!
-  isValid: Boolean!
-  description: String
-  errors: [String!]!
-}
-
 scalar Cursor
-
-type ModuleEdge {
-  node: Map!
-  cursor: Cursor!
-}
 
 type Query {
   "Currently running version of Battlefield server"
@@ -81,9 +44,56 @@ type Query {
   modulesConnection(first: Int, after: Cursor, last: Int, before: Cursor): ModulesConnection!
   "Lists games played on this server"
   gamesConnection(first: Int, after: Cursor, last: Int, before: Cursor): GamesConnection!
+  "Retrieve a specific game by ID."
+  game(id: String!): Game!
 }
 
 scalar Json
+
+type MapsConnection {
+  totalCount: Int!
+  edges: [ModuleEdge!]!
+  pageInfo: PageInfo!
+}
+
+type Game {
+  id: String!
+  commands: [Json!]!
+  simulate(command: Json!): Json!
+  scenario: Json!
+  state: Json!
+  live: LiveGame
+}
+
+type GamesConnection {
+  totalCount: Int!
+  edges: [GameEdge!]!
+  pageInfo: PageInfo!
+}
+
+input NewGame {
+  scenario: String!
+}
+
+type LiveGame {
+  id: String!
+  scenario: Json!
+  state: Json!
+  commands: [Json!]!
+}
+
+type Scenario {
+  path: String!
+  name: String!
+  isValid: Boolean!
+  description: String
+  errors: [String!]!
+}
+
+type ModuleEdge {
+  node: Map!
+  cursor: Cursor!
+}
 
 type PageInfo {
   hasPreviousPage: Boolean!
@@ -94,5 +104,6 @@ type PageInfo {
 
 schema {
   query: Query
+  mutation: Mutation
 }
 

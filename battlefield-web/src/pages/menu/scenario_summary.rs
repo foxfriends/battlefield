@@ -1,5 +1,5 @@
-use crate::api::Scenario;
-use crate::routes::Route;
+use crate::{api::*, routes::Route};
+use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -10,10 +10,51 @@ pub struct Props {
 
 #[function_component(ScenarioSummary)]
 pub fn scenario_summary(props: &Props) -> Html {
+    let history = use_history().unwrap();
+
+    // {Route::NewGame { scenario: props.scenario.name.to_owned() }}
+    let new_game = Callback::from({
+        let scenario = props.scenario.name.to_owned();
+        move |_| {
+            let operation = NewGameMutation::build(NewGameArguments {
+                new_game: NewGame {
+                    scenario: scenario.clone(),
+                },
+            });
+            let history = history.clone();
+            spawn_local(async move {
+                let result = surf::post("http://localhost:8080/graphql")
+                    .run_graphql(operation)
+                    .await
+                    .map_err(ApiError::RequestError)
+                    .and_then(|response| match response.errors {
+                        Some(errors) => Err(ApiError::GraphQlErrors(errors)),
+                        None => Ok(response.data.unwrap()),
+                    })
+                    .and_then(|response| {
+                        response
+                            .game
+                            .id
+                            .parse::<uuid::Uuid>()
+                            .map_err(ApiError::other)
+                    });
+
+                match result {
+                    Ok(id) => {
+                        history.push(Route::Game { id });
+                    }
+                    Err(error) => {
+                        gloo::console::error!(format!("{:?}", error));
+                    }
+                }
+            });
+        }
+    });
+
     html! {
-        <Link<Route>
-            to={Route::NewGame { scenario: props.scenario.name.to_owned() }}
-            classes="flex justify-between border border-black/20 p-4 hover:bg-black/5"
+        <button
+            onclick={new_game}
+            class="text-start flex justify-between border border-black/20 p-4 hover:bg-black/5"
             disabled={!props.scenario.errors.is_empty()}
         >
             <div class="flex flex-col gap-2">
@@ -41,6 +82,6 @@ pub fn scenario_summary(props: &Props) -> Html {
                     {&props.scenario.path}
                 </div>
             </div>
-        </Link<Route>>
+        </button>
     }
 }

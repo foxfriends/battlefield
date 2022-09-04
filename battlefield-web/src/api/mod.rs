@@ -25,6 +25,14 @@ mod fragments {
     }
 
     #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Debug)]
+    pub struct Game {
+        pub id: String,
+        pub commands: Vec<Json>,
+        pub scenario: Json,
+        pub state: Json,
+    }
+
+    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Debug)]
     pub struct PageInfo {
         pub end_cursor: Cursor,
         pub has_next_page: bool,
@@ -40,6 +48,9 @@ mod fragments {
             Self::from(cursor.0)
         }
     }
+
+    #[derive(Eq, PartialEq, cynic::Scalar, Debug, Clone)]
+    pub struct Json(pub serde_json::Value);
 }
 
 #[cynic::schema_for_derives(
@@ -72,16 +83,50 @@ mod queries {
     }
 }
 
+#[cynic::schema_for_derives(
+    file = "src/api/battlefield_server.graphql",
+    module = "crate::api::schema"
+)]
+mod mutations {
+    use super::fragments::*;
+
+    #[derive(cynic::FragmentArguments, Debug)]
+    pub struct NewGameArguments {
+        pub new_game: NewGame,
+    }
+
+    #[derive(cynic::InputObject, Debug)]
+    pub struct NewGame {
+        pub scenario: String,
+    }
+
+    #[derive(cynic::QueryFragment, Debug)]
+    #[cynic(argument_struct = "NewGameArguments", graphql_type = "Mutation")]
+    pub struct NewGameMutation {
+        #[arguments(new_game = &args.new_game)]
+        #[cynic(rename = "new_game")]
+        pub game: Game,
+    }
+}
+
 mod schema {
     cynic::use_schema!("src/api/battlefield_server.graphql");
 }
 
-pub use cynic::{http::SurfExt, QueryBuilder};
+pub use cynic::{http::SurfExt, MutationBuilder, QueryBuilder};
 pub use fragments::*;
+pub use mutations::*;
 pub use queries::*;
 
 #[derive(Debug)]
 pub enum ApiError {
     RequestError(surf::Error),
     GraphQlErrors(Vec<cynic::GraphQlError>),
+    Other(String),
+}
+
+impl ApiError {
+    pub fn other(error: impl std::fmt::Display) -> Self {
+        Self::Other(error.to_string())
+    }
 }

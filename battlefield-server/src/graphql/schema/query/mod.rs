@@ -1,17 +1,22 @@
 use super::connection::{ConnectionResult, Connector, Cursor};
 use super::Context;
+use crate::database;
 use juniper::FieldResult;
 
 mod game;
+pub use game::Game;
 use game::GamesConnector;
 
 mod module;
+pub use module::Module;
 use module::ModulesConnector;
 
 mod scenario;
+pub use scenario::Scenario;
 use scenario::ScenariosConnector;
 
 mod maps;
+pub use maps::Map;
 use maps::MapsConnector;
 
 pub struct Query;
@@ -77,5 +82,12 @@ impl Query {
         GamesConnector::new(context)
             .get(first.map(Into::into), after, last.map(Into::into), before)
             .await
+    }
+
+    /// Retrieve a specific game by ID.
+    async fn game(&self, context: &Context, id: String) -> FieldResult<Game> {
+        Ok(Game(
+            database::Game::load(id.parse()?, &context.database).await?,
+        ))
     }
 }
