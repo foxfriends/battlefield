@@ -1,3 +1,5 @@
+#![allow(clippy::let_unit_value)]
+
 use yew::prelude::*;
 use yew_router::prelude::*;
 
