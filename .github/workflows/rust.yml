@@ -22,11 +22,12 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
+          override: true
+          target: wasm32-unknown-unknown
           components: clippy
       - name: Run cargo clippy
         uses: actions-rs/cargo@v1
         with:
-          toolchain: nightly
           command: clippy
           args: -- -D warnings
   rustfmt:
@@ -50,11 +51,12 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
+          override: true
+          target: wasm32-unknown-unknown
           components: rustfmt
       - name: Run cargo fmt
         uses: actions-rs/cargo@v1
         with:
-          toolchain: nightly
           command: fmt
           args: -- --check
   build:
@@ -78,10 +80,11 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
+          override: true
+          target: wasm32-unknown-unknown
       - name: Run cargo check
         uses: actions-rs/cargo@v1
         with:
-          toolchain: nightly
           command: check
   test:
     name: test
@@ -104,8 +107,9 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
+          override: true
+          target: wasm32-unknown-unknown
       - name: Run cargo test
         uses: actions-rs/cargo@v1
         with:
-          toolchain: nightly
           command: test
