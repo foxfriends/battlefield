@@ -5,7 +5,7 @@ use std::collections::HashMap;
 #[serde(transparent)]
 pub struct EntityId(pub u64);
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Entity {
     pub id: EntityId,
     pub components: HashMap<String, serde_json::Value>,

@@ -1,5 +1,6 @@
 use crate::components::canvas_2d::Canvas2d;
 use crate::components::game_socket_provider::GameSocketProvider;
+use crate::components::game_state_provider::GameStateProvider;
 use crate::pages::game::GamePage;
 use uuid::Uuid;
 use yew::prelude::*;
@@ -13,9 +14,11 @@ pub struct Props {
 pub fn index(props: &Props) -> Html {
     html! {
         <GameSocketProvider url={format!("ws://localhost:8080/ws/{}", props.id)}>
-            <Canvas2d>
-                <GamePage />
-            </Canvas2d>
+            <GameStateProvider>
+                <Canvas2d>
+                    <GamePage />
+                </Canvas2d>
+            </GameStateProvider>
         </GameSocketProvider>
     }
 }

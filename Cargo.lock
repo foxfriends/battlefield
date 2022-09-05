@@ -568,6 +568,7 @@ dependencies = [
  "futures",
  "gloo 0.8.0",
  "js-sys",
+ "json-patch",
  "serde",
  "serde_json",
  "surf",
