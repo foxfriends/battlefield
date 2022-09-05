@@ -1,10 +1,10 @@
-use super::Entity;
+use super::{Entity, Map};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Clone, Serialize, Eq, PartialEq, Deserialize, Debug)]
+#[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
 pub struct State {
     pub entities: Vec<Entity>,
-    pub map: serde_json::Value,
+    pub map: Map,
     pub data: HashMap<String, serde_json::Value>,
 }

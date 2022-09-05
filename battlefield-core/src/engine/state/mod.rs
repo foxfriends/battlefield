@@ -2,7 +2,6 @@ use crate::Map;
 use battlefield_api as api;
 use rhai::Dynamic;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use std::collections::HashMap;
 
 mod entity;
@@ -12,7 +11,7 @@ pub(crate) use entity::{Entity, EntityId};
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct State {
     entities: Vec<Entity>,
-    map: Value,
+    map: crate::data::Map,
     data: HashMap<String, rhai::Dynamic>,
 }
 
@@ -20,7 +19,7 @@ impl State {
     pub(crate) fn new(map: &Map) -> Self {
         State {
             entities: vec![],
-            map: serde_json::to_value(map.data().unwrap()).unwrap(),
+            map: map.data().cloned().unwrap(),
             data: HashMap::default(),
         }
     }
@@ -56,7 +55,7 @@ impl From<State> for api::State {
     fn from(state: State) -> Self {
         Self {
             entities: state.entities.into_iter().map(Into::into).collect(),
-            map: state.map,
+            map: state.map.into(),
             data: state
                 .data
                 .into_iter()
