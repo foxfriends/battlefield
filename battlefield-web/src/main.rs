@@ -5,6 +5,7 @@ use yew_router::prelude::*;
 
 mod api;
 mod components;
+mod engine;
 mod hooks;
 mod pages;
 mod routes;

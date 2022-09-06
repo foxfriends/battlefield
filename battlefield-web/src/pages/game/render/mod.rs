@@ -1,6 +1,7 @@
 use crate::components::game_state_provider::GameState;
 use web_sys::CanvasRenderingContext2d;
 
+mod entity;
 mod map;
 
 pub fn render(ctx: &CanvasRenderingContext2d, game_state: Option<&GameState>) {
@@ -12,5 +13,8 @@ pub fn render(ctx: &CanvasRenderingContext2d, game_state: Option<&GameState>) {
     );
     if let Some(game_state) = game_state {
         map::render(ctx, &game_state.state.map);
+        for entity in &game_state.state.entities {
+            entity::render(ctx, entity);
+        }
     }
 }
