@@ -37,7 +37,7 @@ impl BattlefieldServer {
             .app_data(web::Data::new(self.directory.clone()))
             .app_data(web::Data::new(self.database.clone()))
             .app_data(web::Data::from(self.engine.clone()))
-            .configure(graphql::configure)
-            .configure(websocket::configure);
+            .service(graphql::service())
+            .service(websocket::service());
     }
 }

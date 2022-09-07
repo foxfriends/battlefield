@@ -11,7 +11,8 @@ pub struct Params {
     game_id: Uuid,
 }
 
-pub async fn connect(
+#[actix_web::get("{game_id}")]
+pub async fn handler(
     req: HttpRequest,
     stream: web::Payload,
     path: web::Path<Params>,
