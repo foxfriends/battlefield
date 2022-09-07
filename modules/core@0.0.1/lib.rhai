@@ -4,7 +4,7 @@ fn init(context, state) {
 }
 
 fn commands(context, state) {
-    if state["core.turn"] = context {
+    if state["core.turn"] == context {
     }
 }
 
