@@ -34,10 +34,6 @@ impl From<Game> for database::Game {
 }
 
 impl Game {
-    pub fn id(&self) -> Uuid {
-        self.game.id
-    }
-
     pub async fn new(scenario: Scenario, db: PgPool, engine: Arc<Engine>) -> anyhow::Result<Self> {
         let mut conn = db.acquire().await?;
         let state = engine.initialize(&scenario)?;

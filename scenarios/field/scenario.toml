@@ -3,18 +3,19 @@ map = "field"
 description = "A wide open field with nowhere to hide."
 
 [modules]
-core = "0.0.1"
+
+[modules.core]
+version = "0.0.1"
+[modules.core.config]
+players = 2
 
 [modules.setup_preset]
 version = "0.0.1"
-
 [modules.setup_preset.config.archetypes]
-swordsman = { "core.turns" = 1, "core.health" = 10, "core.attack" = 2, "core.defense" = 0, "core.crit_chance" = 10 }
-
+swordsman = { "core.turns" = 1, "core.health" = 10, "core.attack" = 2, "core.defense" = 0, "core.crit_chance" = 10, "core.movement" = 4 }
 [[modules.setup_preset.config.entities]]
 archetype = "swordsman"
-components = { "core.position" = [0, 0] }
-
+components = { "core.position" = [0, 0], "core.player" = 0 }
 [[modules.setup_preset.config.entities]]
 archetype = "swordsman"
-components = { "core.position" = [9, 9] }
+components = { "core.position" = [9, 9], "core.player" = 1 }

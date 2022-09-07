@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+use super::Player;
 use crate::data::Scenario;
 use crate::Command;
 use rhai::plugin::*;
@@ -7,6 +8,8 @@ use std::sync::{Arc, Mutex};
 #[derive(Clone, Debug)]
 pub struct Context {
     scenario: Scenario,
+    players: Vec<Player>,
+    current_player: Option<usize>,
     current_module: String,
     commands: Vec<Command>,
 }
@@ -15,6 +18,8 @@ impl Context {
     pub(super) fn new(scenario: Scenario) -> Self {
         Self {
             scenario,
+            players: vec![],
+            current_player: None,
             current_module: "*".to_owned(),
             commands: vec![],
         }
@@ -40,6 +45,17 @@ mod plugin_context {
 
     pub type Context = Arc<Mutex<super::Context>>;
     pub type Config = crate::data::ModuleConfig;
+
+    #[rhai_fn(get = "players", pure)]
+    pub fn get_players(context: &mut Context) -> Vec<Player> {
+        context.lock().unwrap().players.clone()
+    }
+
+    #[rhai_fn(get = "current_player", pure)]
+    pub fn get_current_player(context: &mut Context) -> Option<Player> {
+        let context = context.lock().unwrap();
+        Some(context.players[context.current_player?].clone())
+    }
 
     #[rhai_fn(get = "module", pure)]
     pub fn get_module(context: &mut Context) -> String {

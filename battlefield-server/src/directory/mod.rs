@@ -10,11 +10,9 @@ use uuid::Uuid;
 
 mod lookup;
 mod lookup_existing;
-mod new;
 
 pub use lookup::Lookup;
 pub use lookup_existing::LookupExisting;
-pub use new::New;
 
 #[derive(Clone)]
 pub struct Directory {

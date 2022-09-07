@@ -4,10 +4,12 @@ use std::sync::{Arc, Mutex};
 
 mod context;
 mod entity;
+mod player;
 mod state;
 
 use context::{Context, CONTEXT_MODULE};
 use entity::{Entity, ENTITY_MODULE};
+use player::{Player, PLAYER_MODULE};
 use state::STATE_MODULE;
 
 impl super::Engine {
@@ -16,9 +18,10 @@ impl super::Engine {
         scenario: &'a data::Scenario,
     ) -> crate::Result<(rhai::Engine, Vec<&'a str>)> {
         let mut engine = rhai::Engine::new();
-        engine.register_global_module(CONTEXT_MODULE.clone());
         engine.register_global_module(STATE_MODULE.clone());
+        engine.register_global_module(PLAYER_MODULE.clone());
         engine.register_global_module(ENTITY_MODULE.clone());
+        engine.register_global_module(CONTEXT_MODULE.clone());
 
         let required_modules: HashMap<_, _> = scenario
             .modules()
