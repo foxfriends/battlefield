@@ -12,7 +12,6 @@ pub struct Props {
 pub fn scenario_summary(props: &Props) -> Html {
     let history = use_history().unwrap();
 
-    // {Route::NewGame { scenario: props.scenario.name.to_owned() }}
     let new_game = Callback::from({
         let scenario = props.scenario.name.to_owned();
         move |_| {

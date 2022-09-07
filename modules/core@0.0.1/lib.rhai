@@ -1,11 +1,12 @@
 fn init(context, state) {
-    let teams = context.config["teams"];
-    state["core.turn"] = teams[0];
+    state["core.turn"] = 0;
 }
 
 fn commands(context, state) {
-    if state["core.turn"] == context {
+    if state["core.turn"] == context.current_player?.id {
+        return ["my turn"];
     }
+    []
 }
 
 fn perform(context, state, command) {}

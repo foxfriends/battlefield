@@ -52,9 +52,13 @@ mod plugin_context {
     }
 
     #[rhai_fn(get = "current_player", pure)]
-    pub fn get_current_player(context: &mut Context) -> Option<Player> {
+    pub fn get_current_player(context: &mut Context) -> Dynamic {
         let context = context.lock().unwrap();
-        Some(context.players[context.current_player?].clone())
+        if let Some(id) = context.current_player {
+            Dynamic::from(context.players[id].clone())
+        } else {
+            Dynamic::UNIT
+        }
     }
 
     #[rhai_fn(get = "module", pure)]
