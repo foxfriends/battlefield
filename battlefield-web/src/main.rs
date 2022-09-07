@@ -10,14 +10,17 @@ mod hooks;
 mod pages;
 mod routes;
 
+use components::session_gate::SessionGate;
 use routes::{switch, Route};
 
 #[function_component(App)]
 fn app() -> Html {
     html! {
-        <BrowserRouter>
-            <Switch<Route> render={Switch::render(switch)} />
-        </BrowserRouter>
+        <SessionGate>
+            <BrowserRouter>
+                <Switch<Route> render={Switch::render(switch)} />
+            </BrowserRouter>
+        </SessionGate>
     }
 }
 
