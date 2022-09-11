@@ -1,8 +1,8 @@
-use battlefield_api::websocket::Notification;
+use battlefield_api::websocket::{Message, Notification};
 use futures::stream::SplitSink;
 use futures::{SinkExt, StreamExt};
 use gloo::net::websocket::futures::WebSocket;
-use gloo::net::websocket::{Message, WebSocketError};
+use gloo::net::websocket::{self, WebSocketError};
 use std::cell::RefCell;
 use std::future::ready;
 use std::future::Future;
@@ -15,7 +15,7 @@ type Callbacks = Rc<RefCell<Vec<Callback>>>;
 #[derive(Clone)]
 pub struct GameSocket {
     callbacks: Callbacks,
-    sender: Rc<RefCell<SplitSink<WebSocket, Message>>>,
+    sender: Rc<RefCell<SplitSink<WebSocket, websocket::Message>>>,
 }
 
 impl PartialEq for GameSocket {
@@ -34,7 +34,7 @@ impl GameSocket {
             let callbacks = callbacks.clone();
             recv.for_each(move |message| {
                 match message {
-                    Ok(Message::Text(json)) => match serde_json::from_str(&json) {
+                    Ok(websocket::Message::Text(json)) => match serde_json::from_str(&json) {
                         Ok(notification) => {
                             for callback in &*callbacks.borrow() {
                                 callback(&notification);
@@ -44,7 +44,7 @@ impl GameSocket {
                             gloo::console::error!(format!("{:?}", error));
                         }
                     },
-                    Ok(Message::Bytes(..)) => {}
+                    Ok(websocket::Message::Bytes(..)) => {}
                     Err(WebSocketError::ConnectionClose(..)) => {}
                     Err(error) => {
                         gloo::console::error!(format!("{:?}", error));
@@ -58,12 +58,21 @@ impl GameSocket {
     }
 
     #[allow(clippy::await_holding_refcell_ref)]
-    pub fn send(&self, message: Message) -> impl Future<Output = ()> + 'static {
+    fn send(&self, message: Message) -> impl Future<Output = ()> + 'static {
         let sender = self.sender.clone();
         async move {
             let mut sender = sender.borrow_mut();
-            sender.send(message).await.ok();
+            sender
+                .send(websocket::Message::Text(
+                    serde_json::to_string(&message).unwrap(),
+                ))
+                .await
+                .ok();
         }
+    }
+
+    pub fn identify(&self, name: String) -> impl Future<Output = ()> + 'static {
+        self.send(Message::Identify(name))
     }
 
     pub fn subscribe(&self, callback: Callback) -> Subscription {

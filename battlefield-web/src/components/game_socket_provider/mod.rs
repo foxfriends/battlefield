@@ -1,6 +1,6 @@
 use crate::{components::session_gate::use_session, hooks::use_memo::use_memo};
 use battlefield_api::websocket::Notification;
-use gloo::net::websocket::{futures::WebSocket, Message};
+use gloo::net::websocket::futures::WebSocket;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use wasm_bindgen_futures::spawn_local;
@@ -22,7 +22,7 @@ pub fn game_socket_provider(props: &Props) -> Html {
     let socket = use_memo(
         |(url, session)| {
             let socket = GameSocket::new(WebSocket::open(url).unwrap());
-            spawn_local(socket.send(Message::Text(session.name.clone())));
+            spawn_local(socket.identify(session.name.to_owned()));
             socket
         },
         (props.url.clone(), session),
