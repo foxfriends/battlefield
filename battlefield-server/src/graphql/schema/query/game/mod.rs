@@ -20,19 +20,27 @@ impl Game {
         self.0.id.to_string()
     }
 
-    fn commands(&self, context: &Context) -> FieldResult<Vec<Json<Command>>> {
+    fn commands(&self, context: &Context, player: String) -> FieldResult<Vec<Json<Command>>> {
         Ok(context
             .engine
-            .commands(RuntimeContext::new(self.0.scenario.clone()), &self.0.state)?
+            .commands(
+                RuntimeContext::new(self.0.scenario.clone(), Some(player)),
+                &self.0.state,
+            )?
             .into_iter()
             .map(Json)
             .collect::<Vec<_>>())
     }
 
-    fn simulate(&self, context: &Context, command: Json<Command>) -> FieldResult<Json<State>> {
+    fn simulate(
+        &self,
+        context: &Context,
+        command: Json<Command>,
+        player: String,
+    ) -> FieldResult<Json<State>> {
         Ok(Json(context.engine.perform(
             command.0,
-            &self.0.scenario,
+            RuntimeContext::new(self.0.scenario.clone(), Some(player)),
             &self.0.state,
         )?))
     }

@@ -26,8 +26,8 @@ impl<'a> LiveGame<'a> {
         Ok(Json(self.addr.send(GetState).await?))
     }
 
-    async fn commands(&self) -> FieldResult<Vec<Json<Command>>> {
-        let commands = self.addr.send(GetCommands).await??;
+    async fn commands(&self, player: String) -> FieldResult<Vec<Json<Command>>> {
+        let commands = self.addr.send(GetCommands::for_player(player)).await??;
         Ok(commands.into_iter().map(Json).collect())
     }
 }

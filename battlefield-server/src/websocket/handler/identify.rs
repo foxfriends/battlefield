@@ -10,7 +10,7 @@ impl Handler<Identify> for SocketHandler {
     type Result = ();
 
     fn handle(&mut self, Identify(name): Identify, ctx: &mut Self::Context) {
-        self.player_name = Some(name);
+        self.player_name = Some(name.clone());
 
         let game = self.game.clone();
         let game_id = self.game_id;
@@ -23,7 +23,7 @@ impl Handler<Identify> for SocketHandler {
                     return;
                 }
             };
-            let commands = match game.send(GetCommands).await {
+            let commands = match game.send(GetCommands::for_player(name)).await {
                 Ok(Ok(commands)) => commands,
                 Ok(Err(error)) => {
                     socket.do_send(Notification::error(error));

@@ -15,11 +15,11 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(scenario: Scenario) -> Self {
+    pub fn new(scenario: Scenario, _player: Option<String>) -> Self {
         Self {
             scenario,
             players: vec![],
-            current_player: None,
+            current_player: None, // TODO: we also need the list of players
             current_module: "*".to_owned(),
             commands: vec![],
         }

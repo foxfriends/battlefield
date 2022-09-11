@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 #[derive(Message)]
 #[rtype(result = "()")]
-pub(crate) struct Notification(pub api::Notification);
+pub(super) struct Notification(pub api::Notification);
 
 impl Notification {
     pub fn init(id: Uuid, scenario: Scenario, state: State, commands: Vec<Command>) -> Self {

@@ -11,20 +11,26 @@ impl Handler<Sync> for SocketHandler {
 
     fn handle(&mut self, Sync: Sync, ctx: &mut Self::Context) -> Self::Result {
         let game = self.game.clone();
+        let player = self.player_name.clone();
         let socket = ctx.address();
         Box::pin(async move {
-            let state = game.send(GetState).await?;
-            let commands = game
-                .send(GetCommands)
-                .await
-                .map_err(Notification::error)
-                .and_then(|commands| commands.map_err(Notification::error));
-            let notification = match commands {
-                Ok(commands) => Notification::sync(state, commands),
-                Err(error) => error,
-            };
-            socket.do_send(notification);
-            Ok(())
+            match player {
+                Some(player) => {
+                    let state = game.send(GetState).await?;
+                    let commands = game
+                        .send(GetCommands::for_player(player))
+                        .await
+                        .map_err(Notification::error)
+                        .and_then(|commands| commands.map_err(Notification::error));
+                    let notification = match commands {
+                        Ok(commands) => Notification::sync(state, commands),
+                        Err(error) => error,
+                    };
+                    socket.do_send(notification);
+                    Ok(())
+                }
+                None => socket.do_send(Notification::error("Must identify before syncing")),
+            }
         })
     }
 }

@@ -91,7 +91,7 @@ impl super::Engine {
         state: super::State,
     ) -> crate::Result<super::State> {
         let mut scope = rhai::Scope::new();
-        let context = Arc::new(Mutex::new(Context::new(scenario.clone())));
+        let context = Arc::new(Mutex::new(Context::new(scenario.clone(), None)));
         let state = Arc::new(Mutex::new(state));
         scope.push_constant("state", state.clone());
         scope.push_constant("context", context.clone());
@@ -110,16 +110,17 @@ impl super::Engine {
     pub fn perform(
         &self,
         command: Command,
-        scenario: &data::Scenario,
+        context: Context,
         state: &super::State,
     ) -> crate::Result<super::State> {
         let mut scope = rhai::Scope::new();
-        let context = Arc::new(Mutex::new(Context::new(scenario.clone())));
+        let scenario = context.scenario().clone();
+        let (engine, modules) = self.construct_engine(&scenario)?;
+        let context = Arc::new(Mutex::new(context));
         let state = Arc::new(Mutex::new(state.clone()));
         scope.push_constant("command", command.0);
         scope.push_constant("state", state.clone());
         scope.push_constant("context", context.clone());
-        let (engine, modules) = self.construct_engine(scenario)?;
         for name in modules.into_iter().rev() {
             context.lock().unwrap().set_current_module(name);
             engine.run_with_scope(

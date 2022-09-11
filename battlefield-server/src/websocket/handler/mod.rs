@@ -8,12 +8,13 @@ mod command;
 mod identify;
 mod notification;
 mod sync;
-
-pub(crate) use notification::Notification;
+mod update;
 
 use command::Command;
 use identify::Identify;
+use notification::Notification;
 use sync::Sync;
+pub(crate) use update::Update;
 
 pub struct SocketHandler {
     game_id: Uuid,
