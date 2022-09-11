@@ -1,5 +1,6 @@
 use crate::hooks::use_memo::use_memo;
 use gloo::{events::EventListener, utils::window};
+use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 use yew::prelude::*;
@@ -27,9 +28,9 @@ pub fn context_2d_provider(props: &Props) -> Html {
 
     use_effect_with_deps(
         {
-            |context: &Option<CanvasRenderingContext2d>| {
+            |context: &Rc<Option<CanvasRenderingContext2d>>| {
                 let context = context.clone();
-                if let Some(context) = &context {
+                if let Some(context) = context.as_ref() {
                     let canvas = context.canvas().unwrap();
                     let ratio = window().device_pixel_ratio();
                     canvas.set_width(
@@ -41,7 +42,7 @@ pub fn context_2d_provider(props: &Props) -> Html {
                     context.scale(ratio, ratio).unwrap();
                 }
                 let listener = EventListener::new(&window(), "resize", move |_event| {
-                    if let Some(context) = &context {
+                    if let Some(context) = context.as_ref() {
                         let ratio = window().device_pixel_ratio();
                         let canvas = context.canvas().unwrap();
                         canvas.set_width(
@@ -60,7 +61,7 @@ pub fn context_2d_provider(props: &Props) -> Html {
     );
 
     html! {
-        <ContextProvider<Option<CanvasRenderingContext2d>> context={context.clone()}>
+        <ContextProvider<Option<CanvasRenderingContext2d>> context={(*context).clone()}>
             if context.is_some() {
                 {for props.children.iter()}
             }

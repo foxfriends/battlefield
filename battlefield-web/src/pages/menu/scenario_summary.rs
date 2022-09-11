@@ -1,4 +1,6 @@
-use crate::{api::*, routes::Route};
+use crate::api::*;
+use crate::components::http_client_provider::use_http_client;
+use crate::routes::Route;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew_router::prelude::*;
@@ -11,6 +13,7 @@ pub struct Props {
 #[function_component(ScenarioSummary)]
 pub fn scenario_summary(props: &Props) -> Html {
     let history = use_history().unwrap();
+    let client = use_http_client();
 
     let new_game = Callback::from({
         let scenario = props.scenario.name.to_owned();
@@ -21,8 +24,10 @@ pub fn scenario_summary(props: &Props) -> Html {
                 },
             });
             let history = history.clone();
+            let client = client.clone();
             spawn_local(async move {
-                let result = surf::post("http://localhost:8080/graphql")
+                let result = client
+                    .post("graphql")
                     .run_graphql(operation)
                     .await
                     .map_err(ApiError::RequestError)

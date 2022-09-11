@@ -1,8 +1,9 @@
-use crate::hooks::use_memo::use_memo;
+use crate::{components::session_gate::use_session, hooks::use_memo::use_memo};
 use battlefield_api::websocket::Notification;
-use gloo::net::websocket::futures::WebSocket;
+use gloo::net::websocket::{futures::WebSocket, Message};
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
+use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
 mod game_socket;
@@ -17,9 +18,14 @@ pub struct Props {
 
 #[function_component(GameSocketProvider)]
 pub fn game_socket_provider(props: &Props) -> Html {
+    let session = use_session();
     let socket = use_memo(
-        |url| GameSocket::new(WebSocket::open(url).unwrap()),
-        props.url.clone(),
+        |(url, session)| {
+            let socket = GameSocket::new(WebSocket::open(url).unwrap());
+            spawn_local(socket.send(Message::Text(session.name.clone())));
+            socket
+        },
+        (props.url.clone(), session),
     );
 
     #[cfg(debug_assertions)]
@@ -38,7 +44,7 @@ pub fn game_socket_provider(props: &Props) -> Html {
     );
 
     html! {
-        <ContextProvider<GameSocket> context={socket.clone()}>
+        <ContextProvider<GameSocket> context={(*socket).clone()}>
             {for props.children.iter()}
         </ContextProvider<GameSocket>>
     }

@@ -5,6 +5,7 @@ use gloo::net::websocket::futures::WebSocket;
 use gloo::net::websocket::{Message, WebSocketError};
 use std::cell::RefCell;
 use std::future::ready;
+use std::future::Future;
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
 
@@ -17,16 +18,9 @@ pub struct GameSocket {
     sender: Rc<RefCell<SplitSink<WebSocket, Message>>>,
 }
 
-pub struct Subscription {
-    callback: Callback,
-    callbacks: Callbacks,
-}
-
-impl Drop for Subscription {
-    fn drop(&mut self) {
-        self.callbacks
-            .borrow_mut()
-            .retain(|el| !Rc::ptr_eq(el, &self.callback))
+impl PartialEq for GameSocket {
+    fn eq(&self, other: &Self) -> bool {
+        Rc::ptr_eq(&self.sender, &other.sender)
     }
 }
 
@@ -63,10 +57,13 @@ impl GameSocket {
         Self { callbacks, sender }
     }
 
-    #[allow(dead_code, clippy::await_holding_refcell_ref)]
-    pub async fn send(&self, message: Message) {
-        let mut sender = self.sender.borrow_mut();
-        sender.send(message).await.ok();
+    #[allow(clippy::await_holding_refcell_ref)]
+    pub fn send(&self, message: Message) -> impl Future<Output = ()> + 'static {
+        let sender = self.sender.clone();
+        async move {
+            let mut sender = sender.borrow_mut();
+            sender.send(message).await.ok();
+        }
     }
 
     pub fn subscribe(&self, callback: Callback) -> Subscription {
@@ -79,8 +76,15 @@ impl GameSocket {
     }
 }
 
-impl PartialEq for GameSocket {
-    fn eq(&self, other: &Self) -> bool {
-        Rc::ptr_eq(&self.sender, &other.sender)
+pub struct Subscription {
+    callback: Callback,
+    callbacks: Callbacks,
+}
+
+impl Drop for Subscription {
+    fn drop(&mut self) {
+        self.callbacks
+            .borrow_mut()
+            .retain(|el| !Rc::ptr_eq(el, &self.callback))
     }
 }

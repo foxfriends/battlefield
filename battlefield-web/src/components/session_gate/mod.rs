@@ -66,3 +66,7 @@ pub fn session_gate(props: &Props) -> Html {
         }
     }
 }
+
+pub fn use_session() -> Session {
+    use_context::<Session>().unwrap()
+}

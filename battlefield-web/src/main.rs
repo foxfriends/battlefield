@@ -10,6 +10,7 @@ mod hooks;
 mod pages;
 mod routes;
 
+use components::http_client_provider::HttpClientProvider;
 use components::session_gate::SessionGate;
 use routes::{switch, Route};
 
@@ -17,9 +18,11 @@ use routes::{switch, Route};
 fn app() -> Html {
     html! {
         <SessionGate>
-            <BrowserRouter>
-                <Switch<Route> render={Switch::render(switch)} />
-            </BrowserRouter>
+            <HttpClientProvider>
+                <BrowserRouter>
+                    <Switch<Route> render={Switch::render(switch)} />
+                </BrowserRouter>
+            </HttpClientProvider>
         </SessionGate>
     }
 }

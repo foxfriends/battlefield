@@ -1,4 +1,5 @@
 use crate::api::*;
+use crate::components::http_client_provider::use_http_client;
 use crate::hooks::use_query::use_query;
 use yew::prelude::*;
 
@@ -8,17 +9,22 @@ use scenario_summary::ScenarioSummary;
 
 #[function_component(MenuPage)]
 pub fn menu_page() -> Html {
+    let client = use_http_client();
     let scenarios = use_query(
-        |_| async move {
-            let operation = ListScenariosQuery::build(ListScenariosArguments::default());
-            surf::post("http://localhost:8080/graphql")
-                .run_graphql(operation)
-                .await
-                .map_err(ApiError::RequestError)
-                .and_then(|response| match response.errors {
-                    Some(errors) => Err(ApiError::GraphQlErrors(errors)),
-                    None => Ok(response.data.unwrap()),
-                })
+        move |_| {
+            let client = client.clone();
+            async move {
+                let operation = ListScenariosQuery::build(ListScenariosArguments::default());
+                client
+                    .post("graphql")
+                    .run_graphql(operation)
+                    .await
+                    .map_err(ApiError::RequestError)
+                    .and_then(|response| match response.errors {
+                        Some(errors) => Err(ApiError::GraphQlErrors(errors)),
+                        None => Ok(response.data.unwrap()),
+                    })
+            }
         },
         (),
     );
