@@ -3,7 +3,7 @@ use crate::directory::LookupExisting;
 use crate::graphql::schema::connection::{connection_edge, ConnectionNode, Cursor};
 use crate::graphql::{Context, Json};
 use battlefield_core::data::Scenario;
-use battlefield_core::{Command, State};
+use battlefield_core::{Command, RuntimeContext, State};
 use juniper::FieldResult;
 
 mod games_connector;
@@ -23,7 +23,7 @@ impl Game {
     fn commands(&self, context: &Context) -> FieldResult<Vec<Json<Command>>> {
         Ok(context
             .engine
-            .commands(&self.0.scenario, &self.0.state)?
+            .commands(RuntimeContext::new(self.0.scenario.clone()), &self.0.state)?
             .into_iter()
             .map(Json)
             .collect::<Vec<_>>())

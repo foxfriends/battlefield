@@ -15,7 +15,7 @@ pub struct Context {
 }
 
 impl Context {
-    pub(super) fn new(scenario: Scenario) -> Self {
+    pub fn new(scenario: Scenario) -> Self {
         Self {
             scenario,
             players: vec![],
@@ -31,6 +31,10 @@ impl Context {
 
     pub(super) fn into_commands(self) -> Vec<Command> {
         self.commands
+    }
+
+    pub(super) fn scenario(&self) -> &Scenario {
+        &self.scenario
     }
 }
 

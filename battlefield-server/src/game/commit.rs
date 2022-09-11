@@ -1,7 +1,7 @@
 use super::Game;
 use crate::websocket::Notification;
 use actix::prelude::*;
-use battlefield_core::State;
+use battlefield_core::{RuntimeContext, State};
 use json_patch::diff;
 
 #[derive(Message)]
@@ -17,7 +17,8 @@ impl Handler<Commit> for Game {
         let patch = diff(&old_state_json, &new_state_json);
         self.game.state = new_state;
 
-        let commands = match self.engine.commands(&self.game.scenario, &self.game.state) {
+        let context = RuntimeContext::new(self.game.scenario.clone());
+        let commands = match self.engine.commands(context, &self.game.state) {
             Ok(commands) => commands,
             Err(error) => return MessageResult(Err(error.into())),
         };

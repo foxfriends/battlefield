@@ -7,7 +7,8 @@ mod entity;
 mod player;
 mod state;
 
-use context::{Context, CONTEXT_MODULE};
+pub use context::Context;
+use context::CONTEXT_MODULE;
 use entity::{Entity, ENTITY_MODULE};
 use player::{Player, PLAYER_MODULE};
 use state::STATE_MODULE;
@@ -61,17 +62,14 @@ impl super::Engine {
         Ok((engine, module_names_ordered))
     }
 
-    pub fn commands(
-        &self,
-        scenario: &data::Scenario,
-        state: &super::State,
-    ) -> crate::Result<Vec<Command>> {
+    pub fn commands(&self, context: Context, state: &super::State) -> crate::Result<Vec<Command>> {
         let mut scope = rhai::Scope::new();
-        let context = Arc::new(Mutex::new(Context::new(scenario.clone())));
+        let scenario = context.scenario().clone();
+        let (engine, modules) = self.construct_engine(&scenario)?;
+        let context = Arc::new(Mutex::new(context));
         let state = Arc::new(Mutex::new(state.clone()));
         scope.push_constant("state", state);
         scope.push_constant("context", context.clone());
-        let (engine, modules) = self.construct_engine(scenario)?;
         for name in modules {
             context.lock().unwrap().set_current_module(name);
             engine.run_with_scope(

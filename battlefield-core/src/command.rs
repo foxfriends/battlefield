@@ -9,3 +9,9 @@ impl From<Command> for api::Command {
         Self(command.0)
     }
 }
+
+impl From<api::Command> for Command {
+    fn from(command: api::Command) -> Self {
+        Self(command.0)
+    }
+}

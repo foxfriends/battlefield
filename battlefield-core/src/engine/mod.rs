@@ -10,6 +10,7 @@ mod state;
 pub use builder::EngineBuilder;
 pub use map::Map;
 pub use module::Module;
+pub use runtime::Context as RuntimeContext;
 pub use scenario::{Scenario, ScenarioError};
 pub use state::State;
 
