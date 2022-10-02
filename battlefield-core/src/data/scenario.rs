@@ -47,6 +47,16 @@ impl Scenario {
             ..self
         }
     }
+
+    pub fn expected_player_count(&self) -> Option<usize> {
+        self.modules
+            .values()
+            .find(|module| module.name() == "core")?
+            .config
+            .get("players")?
+            .as_integer()
+            .map(|int| int as usize)
+    }
 }
 
 impl From<Scenario> for api::Scenario {

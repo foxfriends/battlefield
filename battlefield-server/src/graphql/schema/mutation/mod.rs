@@ -18,6 +18,17 @@ impl Mutation {
             .scenario(&new_game.scenario)
             .and_then(|scenario| scenario.data())
             .ok_or_else(move || anyhow::anyhow!("Scenario {} not found", new_game.scenario))?;
+
+        if let Some(expected_players) = scenario.expected_player_count() {
+            if expected_players != new_game.players.len() {
+                return Err(format!(
+                    "Expected {expected_players} players, but {} were provided",
+                    new_game.players.len()
+                )
+                .into());
+            }
+        }
+
         let game = Game::new(
             scenario.clone().with_players(new_game.players.clone()),
             new_game.players,
