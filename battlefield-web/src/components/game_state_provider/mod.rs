@@ -1,6 +1,7 @@
 use super::game_socket_provider::use_game_socket;
 use crate::components::game_socket_provider::GameSocket;
 use battlefield_api::websocket::Notification;
+use gloo::utils::format::JsValueSerdeExt;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use yew::prelude::*;
@@ -68,7 +69,10 @@ pub fn game_state_provider(props: &Props) -> Html {
     #[cfg(debug_assertions)]
     use_effect_with_deps(
         |state| {
-            gloo::console::log!("GameState", JsValue::from_serde(state).unwrap());
+            gloo::console::log!(
+                "GameState",
+                <JsValue as JsValueSerdeExt>::from_serde(state).unwrap()
+            );
             || ()
         },
         (*game_state).clone(),

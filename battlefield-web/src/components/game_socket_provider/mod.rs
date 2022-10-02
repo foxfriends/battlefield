@@ -1,6 +1,7 @@
 use crate::{components::session_gate::use_session, hooks::use_memo::use_memo};
 use battlefield_api::websocket::Notification;
 use gloo::net::websocket::futures::WebSocket;
+use gloo::utils::format::JsValueSerdeExt;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use wasm_bindgen_futures::spawn_local;
@@ -34,7 +35,7 @@ pub fn game_socket_provider(props: &Props) -> Html {
             let callback = Rc::new(Box::new(|notification: &Notification| {
                 gloo::console::log!(
                     "GameSocket - Notification Received",
-                    JsValue::from_serde(notification).unwrap()
+                    <JsValue as JsValueSerdeExt>::from_serde(notification).unwrap()
                 );
             }) as Box<dyn Fn(&Notification)>);
             let subscription = socket.subscribe(callback);

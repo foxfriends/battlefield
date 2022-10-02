@@ -1,4 +1,5 @@
 use battlefield_api::Entity;
+use gloo::utils::format::JsValueSerdeExt;
 use wasm_bindgen::JsValue;
 
 use super::Component;
@@ -26,7 +27,7 @@ where
                         std::any::type_name::<Self::Data>(),
                         error,
                     ),
-                    JsValue::from_serde(&component).unwrap()
+                    <JsValue as JsValueSerdeExt>::from_serde(&component).unwrap()
                 );
             })
             .ok()?
