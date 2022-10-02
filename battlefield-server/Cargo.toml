@@ -32,4 +32,5 @@ uuid = { version = "1.1.2", features = ["serde"] }
 battlefield-core = { path = "../battlefield-core/" }
 battlefield-api = { path = "../battlefield-api/" }
 
+# https://github.com/tkaitchuck/aHash/issues/95
 indexmap = "=1.6.2"
