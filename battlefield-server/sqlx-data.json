@@ -1,6 +1,6 @@
 {
   "db": "PostgreSQL",
-  "008b4addf2a0db886c98dd19bd89b01e097424d96f188dc0c6aaa78829ba6d89": {
+  "0e43a997bba9030cca2217ecbf081707d513874e4685eb5a08ae5f14015bdacd": {
     "describe": {
       "columns": [
         {
@@ -17,74 +17,65 @@
           "name": "scenario",
           "ordinal": 2,
           "type_info": "Jsonb"
+        },
+        {
+          "name": "players",
+          "ordinal": 3,
+          "type_info": "VarcharArray"
         }
       ],
       "nullable": [
         false,
         false,
+        false,
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT g.*, array_agg(p.name) as players\n                FROM games g\n                LEFT OUTER JOIN game_players gp ON gp.game_id = g.id\n                LEFT OUTER JOIN players p ON gp.player_id = p.id\n                WHERE g.id = $1\n                GROUP BY g.id\n            "
+  },
+  "1de7e389a5989eaf573b5f12b384d941eb8bf0361d6513d1275e99ce9e7e368b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
         false
       ],
+      "parameters": {
+        "Left": [
+          "Varchar"
+        ]
+      }
+    },
+    "query": "INSERT INTO players (name) values ($1) ON CONFLICT DO NOTHING RETURNING *"
+  },
+  "28517ed1ba7391d17a0d667acf66d22f4f400ebd2b56c848878ae9341ec4cec6": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
       "parameters": {
         "Left": [
           "Uuid",
-          "Int8"
+          "Uuid"
         ]
       }
     },
-    "query": "SELECT * FROM games WHERE id > $1 ORDER BY id ASC LIMIT $2"
-  },
-  "1b27977e69961be94aa4bfc212ce78ba2ce798682e0c50ce9188811a499f980e": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "state",
-          "ordinal": 1,
-          "type_info": "Jsonb"
-        },
-        {
-          "name": "scenario",
-          "ordinal": 2,
-          "type_info": "Jsonb"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Int8"
-        ]
-      }
-    },
-    "query": "SELECT * FROM games ORDER BY id DESC LIMIT $1"
-  },
-  "39d160438499699f4994eadf67bc88f21f51cd99e4de964f360be1c2c55f3399": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Jsonb",
-          "Jsonb"
-        ]
-      }
-    },
-    "query": "INSERT INTO games (scenario, state) values ($1, $2) RETURNING id"
+    "query": "INSERT INTO game_players (game_id, player_id) VALUES ($1, $2)"
   },
   "658cd8c29db79f00cf16487533f574820ec16f12fec3c6dee242694f86c26968": {
     "describe": {
@@ -104,7 +95,7 @@
     },
     "query": "SELECT count(id) FROM games"
   },
-  "6a97dc0c93c4159e2fa7058964cba9468321f27bcb3196a2b480d782332d4924": {
+  "73aeaac56333c5ba1331bd54f75719d6163206726add3e94760ff30d99850c35": {
     "describe": {
       "columns": [
         {
@@ -121,44 +112,18 @@
           "name": "scenario",
           "ordinal": 2,
           "type_info": "Jsonb"
+        },
+        {
+          "name": "players",
+          "ordinal": 3,
+          "type_info": "VarcharArray"
         }
       ],
       "nullable": [
         false,
         false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "SELECT * FROM games WHERE id = $1"
-  },
-  "6b1e6455e31af510b29c0e14f9c8a104fb4f73d13ae67349de0a221c2f3250ba": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "state",
-          "ordinal": 1,
-          "type_info": "Jsonb"
-        },
-        {
-          "name": "scenario",
-          "ordinal": 2,
-          "type_info": "Jsonb"
-        }
-      ],
-      "nullable": [
         false,
-        false,
-        false
+        null
       ],
       "parameters": {
         "Left": [
@@ -167,7 +132,45 @@
         ]
       }
     },
-    "query": "SELECT * FROM games WHERE id > $1 ORDER BY id DESC LIMIT $2"
+    "query": "\n                    SELECT g.*, array_agg(p.name) as players\n                        FROM games g\n                        LEFT OUTER JOIN game_players gp ON gp.game_id = g.id\n                        LEFT OUTER JOIN players p ON gp.player_id = p.id\n                        WHERE g.id > $1\n                        GROUP BY g.id\n                        ORDER BY g.id DESC\n                        LIMIT $2\n                    "
+  },
+  "74cf824eca8bdbc6054dcc7d46b8aefed9ff532d413bb9f1f23961004d812677": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "state",
+          "ordinal": 1,
+          "type_info": "Jsonb"
+        },
+        {
+          "name": "scenario",
+          "ordinal": 2,
+          "type_info": "Jsonb"
+        },
+        {
+          "name": "players",
+          "ordinal": 3,
+          "type_info": "VarcharArray"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n                    SELECT g.*, array_agg(p.name) as players\n                        FROM games g\n                        LEFT OUTER JOIN game_players gp ON gp.game_id = g.id\n                        LEFT OUTER JOIN players p ON gp.player_id = p.id\n                        GROUP BY g.id\n                        ORDER BY g.id DESC\n                        LIMIT $1\n                    "
   },
   "a9a49c2cb33251c9042b62caae89fbe36915167bcbcfac5f281d77234f85419b": {
     "describe": {
@@ -202,6 +205,65 @@
     },
     "query": "UPDATE games SET state = $1 WHERE id = $2"
   },
+  "c3931b6d1fc106482055dee8e610224fdb3c79545f65600943966a048d36cdf9": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Jsonb",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "INSERT INTO games (scenario, state) VALUES ($1, $2) RETURNING id"
+  },
+  "c9d8bf1b617922032abad21eb06e11bf8d908c6984aafbd9a0ad03031c7728dc": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "state",
+          "ordinal": 1,
+          "type_info": "Jsonb"
+        },
+        {
+          "name": "scenario",
+          "ordinal": 2,
+          "type_info": "Jsonb"
+        },
+        {
+          "name": "players",
+          "ordinal": 3,
+          "type_info": "VarcharArray"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n                    SELECT g.*, array_agg(p.name) as players\n                        FROM games g\n                        LEFT OUTER JOIN game_players gp ON gp.game_id = g.id\n                        LEFT OUTER JOIN players p ON gp.player_id = p.id\n                        GROUP BY g.id\n                        ORDER BY g.id ASC\n                        LIMIT $1\n                    "
+  },
   "eeb79cf9962c89f2354de584ce6aff81562d130807bd8e69591f22ec5511d89b": {
     "describe": {
       "columns": [
@@ -222,7 +284,7 @@
     },
     "query": "SELECT EXISTS (SELECT 1 FROM games WHERE id > $1)"
   },
-  "f76f1f20229b3915a77996dd37c62446ce3ab507154e1bb9c1b00da9f10046a5": {
+  "f0a6006e02bfde4d663a8ba40e5d30d74108253739b41bf1bd4379afc5027588": {
     "describe": {
       "columns": [
         {
@@ -239,19 +301,26 @@
           "name": "scenario",
           "ordinal": 2,
           "type_info": "Jsonb"
+        },
+        {
+          "name": "players",
+          "ordinal": 3,
+          "type_info": "VarcharArray"
         }
       ],
       "nullable": [
         false,
         false,
-        false
+        false,
+        null
       ],
       "parameters": {
         "Left": [
+          "Uuid",
           "Int8"
         ]
       }
     },
-    "query": "SELECT * FROM games ORDER BY id ASC LIMIT $1"
+    "query": "\n                    SELECT g.*, array_agg(p.name) as players\n                        FROM games g\n                        LEFT OUTER JOIN game_players gp ON gp.game_id = g.id\n                        LEFT OUTER JOIN players p ON gp.player_id = p.id\n                        WHERE g.id > $1\n                        GROUP BY g.id\n                        ORDER BY g.id ASC\n                        LIMIT $2\n                    "
   }
 }

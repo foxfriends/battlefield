@@ -30,12 +30,11 @@ impl FromRequest for Context {
         let database = web::Data::<PgPool>::from_request(req, payload);
         let directory = web::Data::<Addr<Directory>>::from_request(req, payload);
         let player = req.headers().get("Authorization").and_then(|header| {
-            let header = header.to_str().ok()?;
-            if header.starts_with("Bearer ") {
-                Some(header[7..].to_owned())
-            } else {
-                None
-            }
+            header
+                .to_str()
+                .ok()?
+                .strip_prefix("Bearer ")
+                .map(ToOwned::to_owned)
         });
         Box::pin(async move {
             let engine = engine.await?.into_inner();

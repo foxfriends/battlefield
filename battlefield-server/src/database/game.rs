@@ -124,11 +124,10 @@ impl Game {
                 .fetch_all(conn)
                 .await?
             }
-        } else {
-            if asc {
-                sqlx::query_as!(
-                    RawGame,
-                    r#"
+        } else if asc {
+            sqlx::query_as!(
+                RawGame,
+                r#"
                     SELECT g.*, array_agg(p.name) as players
                         FROM games g
                         LEFT OUTER JOIN game_players gp ON gp.game_id = g.id
@@ -137,14 +136,14 @@ impl Game {
                         ORDER BY g.id ASC
                         LIMIT $1
                     "#,
-                    limit,
-                )
-                .fetch_all(conn)
-                .await?
-            } else {
-                sqlx::query_as!(
-                    RawGame,
-                    r#"
+                limit,
+            )
+            .fetch_all(conn)
+            .await?
+        } else {
+            sqlx::query_as!(
+                RawGame,
+                r#"
                     SELECT g.*, array_agg(p.name) as players
                         FROM games g
                         LEFT OUTER JOIN game_players gp ON gp.game_id = g.id
@@ -153,11 +152,10 @@ impl Game {
                         ORDER BY g.id DESC
                         LIMIT $1
                     "#,
-                    limit,
-                )
-                .fetch_all(conn)
-                .await?
-            }
+                limit,
+            )
+            .fetch_all(conn)
+            .await?
         };
         data.into_iter()
             .map(Game::try_from)
