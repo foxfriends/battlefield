@@ -22,6 +22,9 @@ use maps::MapsConnector;
 mod module_config;
 pub use module_config::{ModuleConfig, ModuleConfigEntry};
 
+#[allow(dead_code)]
+mod player; // TODO: convert live game scenarios to graphql...
+
 pub struct Query;
 
 #[juniper::graphql_object(context = Context)]

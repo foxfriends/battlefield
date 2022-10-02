@@ -10,7 +10,7 @@ mod state;
 pub use context::Context;
 use context::CONTEXT_MODULE;
 use entity::{Entity, ENTITY_MODULE};
-use player::{Player, PLAYER_MODULE};
+use player::PLAYER_MODULE;
 use state::STATE_MODULE;
 
 impl super::Engine {

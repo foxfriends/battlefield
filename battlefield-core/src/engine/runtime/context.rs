@@ -1,6 +1,5 @@
 #![allow(dead_code)]
-use super::Player;
-use crate::data::Scenario;
+use crate::data::{Player, Scenario};
 use crate::Command;
 use rhai::plugin::*;
 use std::sync::{Arc, Mutex};
@@ -8,18 +7,25 @@ use std::sync::{Arc, Mutex};
 #[derive(Clone, Debug)]
 pub struct Context {
     scenario: Scenario,
-    players: Vec<Player>,
     current_player: Option<usize>,
     current_module: String,
     commands: Vec<Command>,
 }
 
 impl Context {
-    pub fn new(scenario: Scenario, _player: Option<String>) -> Self {
+    pub fn new(scenario: Scenario, player: Option<String>) -> Self {
+        let current_player = player.and_then(|name| {
+            Some(
+                scenario
+                    .players
+                    .iter()
+                    .find(|player| player.name == name)?
+                    .id,
+            )
+        });
         Self {
             scenario,
-            players: vec![],
-            current_player: None, // TODO: we also need the list of players
+            current_player,
             current_module: "*".to_owned(),
             commands: vec![],
         }
@@ -52,14 +58,14 @@ mod plugin_context {
 
     #[rhai_fn(get = "players", pure)]
     pub fn get_players(context: &mut Context) -> Vec<Player> {
-        context.lock().unwrap().players.clone()
+        context.lock().unwrap().scenario.players.clone()
     }
 
     #[rhai_fn(get = "current_player", pure)]
     pub fn get_current_player(context: &mut Context) -> Dynamic {
         let context = context.lock().unwrap();
         if let Some(id) = context.current_player {
-            Dynamic::from(context.players[id].clone())
+            Dynamic::from(context.scenario.players[id].clone())
         } else {
             Dynamic::UNIT
         }

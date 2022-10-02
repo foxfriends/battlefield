@@ -25,6 +25,10 @@ impl Scenario<'_> {
         self.0.data().map(|data| data.description())
     }
 
+    // NOTE: Players is not included here because there are only players on
+    // scenarios once the game starts. This scenario is a before-game-started
+    // scenario, so it will not have players.
+
     fn modules(&self) -> Option<Vec<ModuleConfigEntry<'_>>> {
         self.0.data().map(|data| {
             data.modules()

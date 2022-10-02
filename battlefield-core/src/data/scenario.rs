@@ -1,4 +1,4 @@
-use super::{module_map, ModuleConfig};
+use super::{module_map, ModuleConfig, Player};
 use battlefield_api as api;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -8,6 +8,8 @@ pub struct Scenario {
     pub(crate) name: String,
     pub(crate) description: String,
     pub(crate) map: String,
+    #[serde(default)]
+    pub(crate) players: Vec<Player>,
     #[serde(deserialize_with = "module_map")]
     pub(crate) modules: HashMap<String, ModuleConfig>,
 }
@@ -30,6 +32,21 @@ impl Scenario {
     pub fn module(&self, module: &str) -> Option<&ModuleConfig> {
         self.modules.get(module)
     }
+
+    pub fn players(&self) -> &[Player] {
+        &self.players
+    }
+
+    pub fn with_players(self, players: Vec<String>) -> Self {
+        Self {
+            players: players
+                .into_iter()
+                .enumerate()
+                .map(|(id, name)| Player::new(id, name))
+                .collect(),
+            ..self
+        }
+    }
 }
 
 impl From<Scenario> for api::Scenario {
@@ -38,6 +55,11 @@ impl From<Scenario> for api::Scenario {
             name: scenario.name,
             description: scenario.description,
             map: scenario.map,
+            players: scenario
+                .players
+                .into_iter()
+                .map(|player| player.into())
+                .collect(),
             modules: scenario
                 .modules
                 .into_iter()

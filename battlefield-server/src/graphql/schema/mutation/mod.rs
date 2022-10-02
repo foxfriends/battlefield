@@ -19,7 +19,7 @@ impl Mutation {
             .and_then(|scenario| scenario.data())
             .ok_or_else(move || anyhow::anyhow!("Scenario {} not found", new_game.scenario))?;
         let game = Game::new(
-            scenario.clone(),
+            scenario.clone().with_players(new_game.players.clone()),
             new_game.players,
             context.database.clone(),
             context.engine.clone(),

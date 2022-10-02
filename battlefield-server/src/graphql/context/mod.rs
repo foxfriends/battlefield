@@ -16,6 +16,7 @@ pub struct Context {
     // Some sort of sub-pooling of a single connection might be nice?
     pub(super) database: PgPool,
     pub(super) directory: Addr<Directory>,
+    pub(super) player: Option<String>,
 }
 
 impl juniper::Context for Context {}
@@ -28,6 +29,14 @@ impl FromRequest for Context {
         let engine = web::Data::<Engine>::from_request(req, payload);
         let database = web::Data::<PgPool>::from_request(req, payload);
         let directory = web::Data::<Addr<Directory>>::from_request(req, payload);
+        let player = req.headers().get("Authorization").and_then(|header| {
+            let header = header.to_str().ok()?;
+            if header.starts_with("Bearer ") {
+                Some(header[7..].to_owned())
+            } else {
+                None
+            }
+        });
         Box::pin(async move {
             let engine = engine.await?.into_inner();
             let database = (**database.await?).clone();
@@ -36,6 +45,7 @@ impl FromRequest for Context {
                 engine,
                 database,
                 directory,
+                player,
             })
         })
     }

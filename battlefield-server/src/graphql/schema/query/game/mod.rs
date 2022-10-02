@@ -14,13 +14,27 @@ use live_game::LiveGame;
 
 pub struct Game(pub database::Game);
 
+macro_rules! try_authorized {
+    ($a:expr) => {
+        match $a {
+            Some(auth) => auth,
+            None => return Err("Unauthorized".into()),
+        }
+    };
+}
+
 #[juniper::graphql_object(context = Context)]
 impl Game {
     fn id(&self) -> String {
         self.0.id.to_string()
     }
 
-    fn commands(&self, context: &Context, player: String) -> FieldResult<Vec<Json<Command>>> {
+    fn commands(
+        &self,
+        context: &Context,
+        player: Option<String>,
+    ) -> FieldResult<Vec<Json<Command>>> {
+        let player = try_authorized!(player.or_else(|| context.player.clone()));
         Ok(context
             .engine
             .commands(
@@ -36,8 +50,9 @@ impl Game {
         &self,
         context: &Context,
         command: Json<Command>,
-        player: String,
+        player: Option<String>,
     ) -> FieldResult<Json<State>> {
+        let player = try_authorized!(player.or_else(|| context.player.clone()));
         Ok(Json(context.engine.perform(
             command.0,
             RuntimeContext::new(self.0.scenario.clone(), Some(player)),

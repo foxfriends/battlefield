@@ -1,4 +1,4 @@
-use super::Module;
+use super::{Module, Player};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -8,4 +8,5 @@ pub struct Scenario {
     pub description: String,
     pub map: String,
     pub modules: HashMap<String, Module>,
+    pub players: Vec<Player>,
 }
