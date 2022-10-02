@@ -8,3 +8,8 @@ allowing players to build their own turn based strategy game.
 This project is split into a multiple crates, each achieving one specific task:
 *   [`battlefield-core`](./battlefield-core) implements the game engine and core data structures
 *   [`battlefield-server`](./battlefield-server) implements a server that exposes core functionality via a web API
+*   [`battlefield-web`](./battlefield-web) implements a webapp frontend to the server
+*   [`battlefield-api`](./battlefield-api) implements shared data types for communication between web and server
+
+Additionally the `maps`, `modules`, and `scenarios` include game runtime code and data files, which configure
+the server with the components needed for the game engine.
