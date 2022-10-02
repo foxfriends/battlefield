@@ -65,8 +65,8 @@ type MapsConnection {
 
 type Game {
   id: String!
-  commands(player: String!): [Json!]!
-  simulate(command: Json!, player: String!): Json!
+  commands(player: String): [Json!]!
+  simulate(command: Json!, player: String): Json!
   scenario: Json!
   state: Json!
   live: LiveGame

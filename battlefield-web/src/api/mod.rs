@@ -44,7 +44,7 @@ mod fragments {
     #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Serialize, Debug)]
     pub struct Game {
         pub id: String,
-        // pub commands: Vec<Json>,
+        pub commands: Vec<Json>,
         pub scenario: Json,
         pub state: Json,
     }
