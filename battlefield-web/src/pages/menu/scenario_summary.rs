@@ -65,7 +65,7 @@ pub fn scenario_summary(props: &Props) -> Html {
     });
 
     html! {
-        <div class="text-start flex flex-col gap-2 border border-black/20 p-4">
+        <div class="flex flex-col gap-2 border border-black/20 p-4">
             <div class="flex justify-between">
                 <div class="flex flex-col gap-2">
                     <div class="font-semibold">
