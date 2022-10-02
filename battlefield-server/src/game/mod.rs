@@ -9,6 +9,7 @@ use uuid::Uuid;
 mod command;
 mod commit;
 mod get_commands;
+mod get_players;
 mod get_scenario;
 mod get_state;
 mod subscribe;
@@ -16,6 +17,7 @@ mod subscribe;
 pub use command::Command;
 use commit::Commit;
 pub use get_commands::GetCommands;
+pub use get_players::GetPlayers;
 pub use get_scenario::GetScenario;
 pub use get_state::GetState;
 pub use subscribe::Subscribe;
@@ -34,10 +36,15 @@ impl From<Game> for database::Game {
 }
 
 impl Game {
-    pub async fn new(scenario: Scenario, db: PgPool, engine: Arc<Engine>) -> anyhow::Result<Self> {
+    pub async fn new(
+        scenario: Scenario,
+        players: Vec<String>,
+        db: PgPool,
+        engine: Arc<Engine>,
+    ) -> anyhow::Result<Self> {
         let mut conn = db.acquire().await?;
         let state = engine.initialize(&scenario)?;
-        let game = database::Game::create(scenario, state, &mut conn).await?;
+        let game = database::Game::create(scenario, players, state, &mut conn).await?;
         Ok(Self {
             game,
             db,

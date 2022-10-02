@@ -10,11 +10,18 @@ use uuid::Uuid;
 pub(super) struct Notification(pub api::Notification);
 
 impl Notification {
-    pub fn init(id: Uuid, scenario: Scenario, state: State, commands: Vec<Command>) -> Self {
+    pub fn init(
+        id: Uuid,
+        scenario: Scenario,
+        state: State,
+        players: Vec<String>,
+        commands: Vec<Command>,
+    ) -> Self {
         Self(api::Notification::Init {
             id,
             scenario: scenario.into(),
             state: state.into(),
+            players,
             commands: commands.into_iter().map(Into::into).collect(),
         })
     }

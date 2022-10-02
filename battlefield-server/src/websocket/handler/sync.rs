@@ -27,10 +27,12 @@ impl Handler<Sync> for SocketHandler {
                         Err(error) => error,
                     };
                     socket.do_send(notification);
-                    Ok(())
                 }
-                None => socket.do_send(Notification::error("Must identify before syncing")),
+                None => {
+                    socket.do_send(Notification::error("Must identify before syncing"));
+                }
             }
+            Ok(())
         })
     }
 }

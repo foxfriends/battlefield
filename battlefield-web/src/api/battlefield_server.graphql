@@ -31,6 +31,13 @@ type ScenarioEdge {
   cursor: Cursor!
 }
 
+type ModuleConfig {
+  id: String!
+  name: String!
+  version: String!
+  config: Json!
+}
+
 scalar Cursor
 
 type Query {
@@ -58,8 +65,8 @@ type MapsConnection {
 
 type Game {
   id: String!
-  commands: [Json!]!
-  simulate(command: Json!): Json!
+  commands(player: String!): [Json!]!
+  simulate(command: Json!, player: String!): Json!
   scenario: Json!
   state: Json!
   live: LiveGame
@@ -73,13 +80,14 @@ type GamesConnection {
 
 input NewGame {
   scenario: String!
+  players: [String!]!
 }
 
 type LiveGame {
   id: String!
   scenario: Json!
   state: Json!
-  commands: [Json!]!
+  commands(player: String!): [Json!]!
 }
 
 type Scenario {
@@ -87,12 +95,18 @@ type Scenario {
   name: String!
   isValid: Boolean!
   description: String
+  modules: [ModuleConfigEntry!]
   errors: [String!]!
 }
 
 type ModuleEdge {
   node: Map!
   cursor: Cursor!
+}
+
+type ModuleConfigEntry {
+  key: String!
+  value: ModuleConfig!
 }
 
 type PageInfo {

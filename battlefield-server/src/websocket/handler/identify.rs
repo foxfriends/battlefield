@@ -1,5 +1,5 @@
 use super::{Notification, SocketHandler};
-use crate::game::{GetCommands, GetScenario, GetState};
+use crate::game::{GetCommands, GetPlayers, GetScenario, GetState};
 use actix::prelude::*;
 
 #[derive(Message)]
@@ -34,6 +34,13 @@ impl Handler<Identify> for SocketHandler {
                     return;
                 }
             };
+            let players = match game.send(GetPlayers).await {
+                Ok(players) => players,
+                Err(error) => {
+                    socket.do_send(Notification::error(error));
+                    return;
+                }
+            };
             let scenario = match game.send(GetScenario).await {
                 Ok(scenario) => scenario,
                 Err(error) => {
@@ -41,7 +48,9 @@ impl Handler<Identify> for SocketHandler {
                     return;
                 }
             };
-            socket.do_send(Notification::init(game_id, scenario, state, commands));
+            socket.do_send(Notification::init(
+                game_id, scenario, state, players, commands,
+            ));
         };
         future.into_actor(self).spawn(ctx);
     }

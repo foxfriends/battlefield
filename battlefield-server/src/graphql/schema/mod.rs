@@ -2,6 +2,7 @@ use super::Context;
 use juniper::{EmptySubscription, RootNode};
 
 mod connection;
+mod key_value;
 mod mutation;
 mod query;
 

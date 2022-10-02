@@ -19,6 +19,9 @@ mod maps;
 pub use maps::Map;
 use maps::MapsConnector;
 
+mod module_config;
+pub use module_config::{ModuleConfig, ModuleConfigEntry};
+
 pub struct Query;
 
 #[juniper::graphql_object(context = Context)]

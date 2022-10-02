@@ -3,7 +3,7 @@ use sqlx::{Executor, Postgres};
 use uuid::Uuid;
 
 use super::Game;
-use crate::database::{self, RawGame};
+use crate::database;
 use crate::graphql::schema::connection::{
     connection, Connection, Connector, Cursor, Edge, PageInfo,
 };
@@ -68,28 +68,10 @@ impl GamesConnector<'_> {
         limit: i64,
         conn: impl Executor<'_, Database = Postgres>,
     ) -> anyhow::Result<Vec<database::Game>> {
-        let query = match cursor {
-            None => {
-                sqlx::query_as!(
-                    RawGame,
-                    "SELECT * FROM games ORDER BY id ASC LIMIT $1",
-                    limit
-                )
-                .fetch_all(conn)
-                .await?
-            }
-            Some(cursor) => {
-                sqlx::query_as!(
-                    RawGame,
-                    "SELECT * FROM games WHERE id > $1 ORDER BY id ASC LIMIT $2",
-                    cursor,
-                    limit
-                )
-                .fetch_all(conn)
-                .await?
-            }
-        };
-        query.into_iter().map(database::Game::try_from).collect()
+        match cursor {
+            None => Ok(database::Game::load_many(None, limit, true, conn).await?),
+            Some(cursor) => Ok(database::Game::load_many(Some(cursor), limit, true, conn).await?),
+        }
     }
 
     async fn list_before(
@@ -97,32 +79,10 @@ impl GamesConnector<'_> {
         limit: i64,
         conn: impl Executor<'_, Database = Postgres>,
     ) -> anyhow::Result<Vec<database::Game>> {
-        let query = match cursor {
-            None => {
-                sqlx::query_as!(
-                    RawGame,
-                    "SELECT * FROM games ORDER BY id DESC LIMIT $1",
-                    limit
-                )
-                .fetch_all(conn)
-                .await?
-            }
-            Some(cursor) => {
-                sqlx::query_as!(
-                    RawGame,
-                    "SELECT * FROM games WHERE id > $1 ORDER BY id DESC LIMIT $2",
-                    cursor,
-                    limit
-                )
-                .fetch_all(conn)
-                .await?
-            }
-        };
-        query
-            .into_iter()
-            .rev()
-            .map(database::Game::try_from)
-            .collect()
+        match cursor {
+            None => Ok(database::Game::load_many(None, limit, false, conn).await?),
+            Some(cursor) => Ok(database::Game::load_many(Some(cursor), limit, false, conn).await?),
+        }
     }
 
     async fn page_info<E>(edges: &[database::Game], conn: &mut E) -> anyhow::Result<PageInfo>

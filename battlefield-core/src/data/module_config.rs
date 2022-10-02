@@ -15,6 +15,18 @@ impl ModuleConfig {
     pub fn id(&self) -> ModuleId {
         ModuleId::new(self.name.clone(), self.version.clone())
     }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn version(&self) -> &str {
+        &self.version
+    }
+
+    pub fn config(&self) -> &toml::value::Table {
+        &self.config
+    }
 }
 
 #[derive(Clone, Deserialize)]

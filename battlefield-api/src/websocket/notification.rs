@@ -9,6 +9,7 @@ pub enum Notification {
         id: Uuid,
         scenario: Scenario,
         state: State,
+        players: Vec<String>,
         commands: Vec<Command>,
     },
     Sync {

@@ -3,36 +3,53 @@
     module = "crate::api::schema"
 )]
 mod fragments {
-    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Debug)]
+    use serde::Serialize;
+
+    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Serialize, Debug)]
     pub struct ScenariosConnection {
         pub page_info: PageInfo,
         pub edges: Vec<ScenarioEdge>,
     }
 
-    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Debug)]
+    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Serialize, Debug)]
     pub struct ScenarioEdge {
         pub cursor: Cursor,
         pub node: Scenario,
     }
 
-    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Debug)]
+    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Serialize, Debug)]
     pub struct Scenario {
         pub description: Option<String>,
         pub errors: Vec<String>,
         pub is_valid: bool,
         pub path: String,
         pub name: String,
+        pub modules: Option<Vec<ModuleConfigEntry>>,
     }
 
-    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Debug)]
+    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Serialize, Debug)]
+    pub struct ModuleConfigEntry {
+        pub key: String,
+        pub value: ModuleConfig,
+    }
+
+    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Serialize, Debug)]
+    pub struct ModuleConfig {
+        pub id: String,
+        pub name: String,
+        pub version: String,
+        pub config: Json,
+    }
+
+    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Serialize, Debug)]
     pub struct Game {
         pub id: String,
-        pub commands: Vec<Json>,
+        // pub commands: Vec<Json>,
         pub scenario: Json,
         pub state: Json,
     }
 
-    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Debug)]
+    #[derive(Clone, Eq, PartialEq, cynic::QueryFragment, Serialize, Debug)]
     pub struct PageInfo {
         pub end_cursor: Cursor,
         pub has_next_page: bool,
@@ -40,7 +57,7 @@ mod fragments {
         pub start_cursor: Cursor,
     }
 
-    #[derive(Eq, PartialEq, Hash, cynic::Scalar, Debug, Clone)]
+    #[derive(Clone, Eq, PartialEq, Hash, cynic::Scalar, Debug)]
     pub struct Cursor(pub String);
 
     impl From<Cursor> for yew::virtual_dom::Key {
@@ -98,6 +115,7 @@ mod mutations {
     #[derive(cynic::InputObject, Debug)]
     pub struct NewGame {
         pub scenario: String,
+        pub players: Vec<String>,
     }
 
     #[derive(cynic::QueryFragment, Debug)]
