@@ -1,6 +1,6 @@
 > ⚠️ This project has once again sat for too long, and is getting archived.
 >
-> It will be revived once again as (Paper Wars)[https://github.com/foxfriends/paper-wars], having relocated the previously defunct attempt.
+> It will be revived once again as [Paper Wars](https://github.com/foxfriends/paper-wars), having relocated the previously defunct attempt.
 
 # Battlefield
 
